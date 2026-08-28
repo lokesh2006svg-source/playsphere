@@ -40,6 +40,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const server = http.createServer(app);
 
+// Trust first proxy hop (essential for accurate client IP identification on Render/Vercel)
+app.set("trust proxy", 1);
+
 // Security Headers via Helmet (MIME sniffing, Clickjacking, CSP)
 app.use(
   helmet({
