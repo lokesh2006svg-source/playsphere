@@ -51,19 +51,32 @@ app.use(
   })
 );
 
-// Allowed Origins for Strict CORS
+// Allowed Origins for Strict & Dynamic Production CORS
 const allowedOrigins = [
-  process.env.FRONTEND_URL || "http://localhost:5173",
+  process.env.FRONTEND_URL,
+  "https://playsphere-eight.vercel.app",
+  "https://playsphere.vercel.app",
   "http://127.0.0.1:5173",
   "http://localhost:5173",
   "http://localhost:5000",
   "http://127.0.0.1:5000",
-];
+].filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+  if (origin.endsWith(".vercel.app") || origin.includes("vercel.app")) return true;
+  if (origin.includes("localhost") || origin.includes("127.0.0.1")) return true;
+  return false;
+};
 
 // Configure Socket.io with credentials support
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) return callback(null, true);
+      return callback(new Error(`CORS policy blocked access from origin: ${origin}`));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
   },
@@ -72,8 +85,7 @@ const io = new Server(server, {
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile curl/scripts) or matching allowed list
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         return callback(null, true);
       }
       return callback(new Error(`CORS policy blocked access from origin: ${origin}`));
