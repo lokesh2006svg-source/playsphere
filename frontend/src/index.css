@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-court-900 text-[#F5F0E6] antialiased selection:bg-gold/30 selection:text-gold-light;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Custom Championship Sports Glassmorphism & Gold Card Styles */
+.glass-panel {
+  background: rgba(22, 25, 32, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(26, 29, 36, 0.9) 0%, rgba(15, 17, 21, 0.95) 100%);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+.glass-card-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-card-hover:hover {
+  transform: translateY(-4px);
+  border-color: rgba(212, 175, 55, 0.45);
+  box-shadow: 0 16px 36px -10px rgba(212, 175, 55, 0.22);
+}
+
+/* Holographic Player ID Card (Gold Championship Edition) */
+.hologram-card {
+  background: linear-gradient(135deg, #161920 0%, #1e222b 40%, #2a220a 100%);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+}
+
+.hologram-card::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.08) 45%,
+    rgba(212, 175, 55, 0.22) 50%,
+    rgba(240, 185, 11, 0.15) 55%,
+    transparent 70%
+  );
+  transform: rotate(30deg);
+  pointer-events: none;
+}
+
+/* Custom Gold Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0f1115;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2d35;
+  border-radius: 4px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #d4af37;
+}
