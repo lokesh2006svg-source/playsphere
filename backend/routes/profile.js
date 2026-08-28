@@ -22,6 +22,7 @@ router.post("/", protect, validateProfile, createOrUpdateProfile);
 router.put("/", protect, validateProfile, createOrUpdateProfile);
 router.put("/location", protect, updateLocation);
 router.post("/photo", protect, uploadProfilePhoto.single("photo"), updatePhoto);
+router.post("/upload-photo", protect, uploadProfilePhoto.single("photo"), updatePhoto);
 router.delete("/photo", protect, deletePhoto);
 router.get("/:userId/card", protect, getPlayerCard);
 router.get("/:userId", protect, getProfileByUserId);

@@ -120,10 +120,16 @@ export const fetchPublicProfile = (userId) => api.get(`/profile/public/${userId}
 export const fetchPlayerCard = (userId) => api.get(`/profile/${userId}/card`);
 export const updatePlayerLocation = (data) => api.put("/profile/location", data);
 export const updatePlayerBadges = (data) => api.put("/profile/badges", data);
-export const uploadProfilePhoto = (formData) =>
-  api.post("/profile/upload-photo", formData, {
+export const uploadProfilePhoto = (fileOrFormData) => {
+  let body = fileOrFormData;
+  if (fileOrFormData instanceof File || fileOrFormData instanceof Blob) {
+    body = new FormData();
+    body.append("photo", fileOrFormData);
+  }
+  return api.post("/profile/upload-photo", body, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+};
 export const deleteProfilePhoto = () => api.delete("/profile/photo");
 
 // ==========================================
