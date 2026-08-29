@@ -12,6 +12,7 @@ export const loginLimiter = rateLimit({
   legacyHeaders: false,
   skipSuccessfulRequests: true, // Only count failed login attempts
   validate: { trustProxy: false },
+  skip: () => process.env.RATE_LIMIT_DISABLED === "true",
   message: {
     success: false,
     message: "Too many failed login attempts from this network. Please try again after 15 minutes.",
@@ -23,14 +24,15 @@ export const loginLimiter = rateLimit({
  * Allows multiple users/devices on the same Wi-Fi / NAT network / demo environment to register smoothly.
  */
 export const registerLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: Number(process.env.RATE_LIMIT_REGISTER_MAX) || 100,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: Number(process.env.RATE_LIMIT_REGISTER_MAX) || 250,
   standardHeaders: true,
   legacyHeaders: false,
   validate: { trustProxy: false },
+  skip: () => process.env.RATE_LIMIT_DISABLED === "true",
   message: {
     success: false,
-    message: "Too many accounts registered from this network recently. Please try again later.",
+    message: "Too many accounts registered from this network recently. Please try again in a few minutes.",
   },
 });
 
@@ -43,6 +45,7 @@ export const resendOtpLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   validate: { trustProxy: false },
+  skip: () => process.env.RATE_LIMIT_DISABLED === "true",
   message: {
     success: false,
     message: "Too many verification code requests. Please wait a few minutes before trying again.",
@@ -59,6 +62,7 @@ export const chatbotLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   validate: { trustProxy: false },
+  skip: () => process.env.RATE_LIMIT_DISABLED === "true",
   message: {
     success: false,
     message: "Hourly chatbot query limit reached. Please explore the official Game Rules tab directly.",
@@ -75,6 +79,7 @@ export const paymentConfirmLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   validate: { trustProxy: false },
+  skip: () => process.env.RATE_LIMIT_DISABLED === "true",
   message: {
     success: false,
     message: "Too many payment confirmation requests. Please wait a few minutes before trying again.",
@@ -91,6 +96,7 @@ export const apiGlobalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   validate: { trustProxy: false },
+  skip: () => process.env.RATE_LIMIT_DISABLED === "true",
   message: {
     success: false,
     message: "Too many requests from your network. Please slow down.",
