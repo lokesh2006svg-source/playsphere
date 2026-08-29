@@ -3,15 +3,25 @@ import TeamInvite from "../models/TeamInvite.js";
 import Notification from "../models/Notification.js";
 import User from "../models/User.js";
 import PlayerProfile from "../models/PlayerProfile.js";
+import CoachProfile from "../models/CoachProfile.js";
 import { triggerWebhook } from "../utils/webhookNotifier.js";
 import { sendTeamInviteEmail } from "../utils/emailService.js";
 
 // @desc    Create a new sports team
 // @route   POST /api/teams
-// @access  Private
+// @access  Private (Coach / Admin only)
 export const createTeam = async (req, res) => {
   try {
     const { name, sport, city, logo, bio, clubId } = req.body;
+
+    // Role check: Only coaches (and administrators) have permission to register official teams
+    const allowedRoles = ["coach", "admin", "super_admin"];
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: "Only certified Coaches can create and register official teams. Players can join teams via invite codes.",
+      });
+    }
 
     if (!name || !sport) {
       return res.status(400).json({ message: "Team name and sport are required." });
@@ -38,6 +48,7 @@ export const createTeam = async (req, res) => {
       logo: logo || "",
       bio: bio || "",
       clubId: clubId || null,
+      coachId: req.user._id,
       captainId: req.user._id,
       members: [
         {
@@ -48,7 +59,14 @@ export const createTeam = async (req, res) => {
       ],
     });
 
+    // Link team to CoachProfile if user is a coach
+    await CoachProfile.findOneAndUpdate(
+      { userId: req.user._id },
+      { $addToSet: { managedTeamIds: team._id } }
+    );
+
     const populatedTeam = await Team.findById(team._id)
+      .populate("coachId", "name email city profilePhoto")
       .populate("captainId", "name email city")
       .populate("members.userId", "name email city profilePhoto");
 

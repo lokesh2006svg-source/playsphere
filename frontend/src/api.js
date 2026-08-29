@@ -156,6 +156,9 @@ export const fetchLeaderboard = (params) => api.get("/players/leaderboard", { pa
 // 5. VENUES & TURF BOOKINGS
 // ==========================================
 export const fetchVenues = (params) => api.get("/venues", { params });
+export const fetchMyVenues = () => api.get("/venues/my-venues");
+export const createVenue = (data) => api.post("/venues", data);
+export const updateVenueDetails = (id, data) => api.put(`/venues/${id}`, data);
 export const fetchVenueById = (id) => api.get(`/venues/${id}`);
 export const fetchVenueAvailability = (id, date) => api.get(`/venues/${id}/availability?date=${date}`);
 export const bookVenue = (data) => api.post("/bookings", data);

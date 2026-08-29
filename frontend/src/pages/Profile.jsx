@@ -50,6 +50,20 @@ const Profile = () => {
   });
 
   useEffect(() => {
+    if (profile) {
+      setFormData({
+        sport: profile.sport || "Cricket",
+        skillLevel: profile.skillLevel || "intermediate",
+        city: profile.city || user?.city || "Chennai",
+        bio: profile.bio || "",
+        phone: profile.phone || "",
+        preferredPlayTime: profile.preferredPlayTime || "Evenings (5 PM - 8 PM)",
+        profilePhoto: profile.profilePhoto || "",
+      });
+    }
+  }, [profile, user]);
+
+  useEffect(() => {
     if (user?._id) {
       fetchPlayerCard(user._id)
         .then((res) => {

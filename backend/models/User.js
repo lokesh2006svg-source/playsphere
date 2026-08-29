@@ -61,8 +61,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "player", "venue_admin", "organizer", "admin", "super_admin"],
-      default: "user",
+      enum: ["player", "ground_owner", "coach", "venue_admin", "admin", "super_admin", "organizer", "user"],
+      default: "player",
     },
     isEmailVerified: {
       type: Boolean,

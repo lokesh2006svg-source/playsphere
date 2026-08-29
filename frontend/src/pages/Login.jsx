@@ -135,27 +135,27 @@ const Login = () => {
           </button>
         </form>
 
-        {/* 1-Click Quick Demo Accounts */}
+        {/* Quick Demo Accounts for Testing */}
         <div className="mt-6 pt-4 border-t border-court-700 relative z-10">
           <span className="text-[11px] font-bold text-[#9B9691] uppercase tracking-wider block text-center mb-2.5">
-            Quick Demo Login (1-Click)
+            Quick Demo Login
           </span>
           <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleDemoFill("demo@playsphere.com", "PlaySphere@Admin2026")}
-              className="px-3 py-2 bg-court-800 hover:bg-court-750 text-[#F5F0E6] rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border border-court-700 hover:border-gold/40 transition-colors"
-            >
-              <UserCheck className="w-3.5 h-3.5 text-gold" />
-              <span>Admin / Lokesh</span>
-            </button>
             <button
               type="button"
               onClick={() => handleDemoFill("ananya@playsphere.com", "password123")}
               className="px-3 py-2 bg-court-800 hover:bg-court-750 text-[#F5F0E6] rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border border-court-700 hover:border-gold/40 transition-colors"
             >
-              <Sparkles className="w-3.5 h-3.5 text-action" />
+              <Sparkles className="w-3.5 h-3.5 text-gold" />
               <span>Ananya (Player)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoFill("karthik@playsphere.com", "password123")}
+              className="px-3 py-2 bg-court-800 hover:bg-court-750 text-[#F5F0E6] rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border border-court-700 hover:border-gold/40 transition-colors"
+            >
+              <UserCheck className="w-3.5 h-3.5 text-blue-400" />
+              <span>Karthik (Coach)</span>
             </button>
           </div>
         </div>

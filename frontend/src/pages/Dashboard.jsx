@@ -71,73 +71,170 @@ const Dashboard = () => {
     loadOverview();
   }, []);
 
-  const featureCards = [
-    {
-      title: "Find Nearby Players",
-      description: "Discover local athletes in your city with GPS distance matching & skill filters.",
-      path: "/players",
-      icon: Users,
-      color: "from-gold/20 to-amber-500/20 border-gold/30 text-gold",
-      cta: "Explore Players",
-    },
-    {
-      title: "Book Courts & Turfs",
-      description: "Reserve synthetic turf, badminton courts & grounds with real-time slot booking.",
-      path: "/venues",
-      icon: Calendar,
-      color: "from-amber-400/20 to-gold/20 border-gold/40 text-gold-light",
-      cta: "Book a Slot",
-    },
-    {
-      title: "Tournaments & Brackets",
-      description: "Register your squad for knockout leagues and view automated match brackets.",
-      path: "/tournaments",
-      icon: Trophy,
-      color: "from-gold/25 to-yellow-500/20 border-gold/50 text-gold",
-      cta: "Join Tournaments",
-    },
-    {
-      title: "Teams & Squads",
-      description: "Create your team roster, invite players, manage roles, and enter championships.",
-      path: "/teams",
-      icon: Shield,
-      color: "from-amber-600/20 to-gold/20 border-amber-500/30 text-amber-300",
-      cta: "Manage Squads",
-    },
-    {
-      title: "Live Scores & Streams",
-      description: "Real-time ball-by-ball updates, live YouTube streams, and official scorer control.",
-      path: "/live",
-      icon: Radio,
-      color: "from-red-500/20 to-rose-500/20 border-red-500/30 text-red-400",
-      cta: "Watch Live",
-      badge: "LIVE NOW",
-    },
-    {
-      title: "33+ Sports Rules Guide",
-      description: "Official rulebooks, foul clarifications, and referee guidelines across all sports.",
-      path: "/rules",
-      icon: BookOpen,
-      color: "from-gold/15 to-amber-500/15 border-gold/30 text-gold",
-      cta: "Read Rules",
-    },
-    {
-      title: "Official Sports Bodies",
-      description: "Directory of recognized State & District associations (TNCA, TNFA, TNKA, TNBA).",
-      path: "/official-bodies",
-      icon: Building2,
-      color: "from-court-800 to-court-850 border-court-700 text-[#F5F0E6]",
-      cta: "View Directory",
-    },
-    {
-      title: "Sports Clubs & Academies",
-      description: "Connect with certified local sports clubs, training centers, and team trials.",
-      path: "/clubs",
-      icon: Shield,
-      color: "from-gold/20 to-court-800 border-gold/30 text-gold",
-      cta: "Browse Clubs",
-    },
-  ];
+  // Dynamic role-based feature cards
+  const getFeatureCards = () => {
+    if (user?.role === "ground_owner") {
+      return [
+        {
+          title: "My Listed Venues & Turfs",
+          description: "Manage your registered venues, update court pricing, availability & photos.",
+          path: "/venues",
+          icon: Building2,
+          color: "from-emerald-500/20 to-teal-500/20 border-emerald-500/30 text-emerald-400",
+          cta: "Manage My Venues",
+        },
+        {
+          title: "List a New Turf / Court",
+          description: "Add a new synthetic turf, tennis court, or cricket ground to PlaySphere.",
+          path: "/venues",
+          icon: Calendar,
+          color: "from-gold/20 to-amber-500/20 border-gold/30 text-gold",
+          cta: "Add New Ground",
+        },
+        {
+          title: "Turf Slot Reservations",
+          description: "View real-time player slot bookings, revenue & confirmed time slots.",
+          path: "/bookings",
+          icon: Clock,
+          color: "from-amber-400/20 to-gold/20 border-gold/40 text-gold-light",
+          cta: "View Reservations",
+        },
+        {
+          title: "Live Match Feeds",
+          description: "Watch live matches hosted across Tamil Nadu grounds and stadiums.",
+          path: "/live",
+          icon: Radio,
+          color: "from-red-500/20 to-rose-500/20 border-red-500/30 text-red-400",
+          cta: "Watch Live",
+          badge: "LIVE",
+        },
+        {
+          title: "33+ Sports Rules Guide",
+          description: "Official ground dimensions, rulebooks, and referee guidelines.",
+          path: "/rules",
+          icon: BookOpen,
+          color: "from-gold/15 to-amber-500/15 border-gold/30 text-gold",
+          cta: "Read Rules",
+        },
+        {
+          title: "Official Sports Bodies",
+          description: "Directory of recognized State & District sports associations.",
+          path: "/official-bodies",
+          icon: ShieldCheck,
+          color: "from-court-800 to-court-850 border-court-700 text-[#F5F0E6]",
+          cta: "View Directory",
+        },
+      ];
+    }
+
+    if (user?.role === "coach") {
+      return [
+        {
+          title: "My Managed Squads & Teams",
+          description: "Manage player rosters, assign jersey numbers, and monitor team performance.",
+          path: "/teams",
+          icon: Shield,
+          color: "from-blue-500/20 to-indigo-500/20 border-blue-500/30 text-blue-400",
+          cta: "Manage My Teams",
+        },
+        {
+          title: "Create & Register New Squad",
+          description: "Form a certified team, invite talented players, and prepare for state leagues.",
+          path: "/teams",
+          icon: Users,
+          color: "from-gold/20 to-amber-500/20 border-gold/30 text-gold",
+          cta: "Create Squad",
+        },
+        {
+          title: "Tournaments & Championships",
+          description: "Register your squads for upcoming knockout cups and view automated brackets.",
+          path: "/tournaments",
+          icon: Trophy,
+          color: "from-gold/25 to-yellow-500/20 border-gold/50 text-gold",
+          cta: "Enter Tournaments",
+        },
+        {
+          title: "Scout Nearby Talent",
+          description: "Discover verified local players in your city with skill filters and stats.",
+          path: "/players",
+          icon: Sparkles,
+          color: "from-amber-400/20 to-gold/20 border-gold/40 text-gold-light",
+          cta: "Scout Players",
+        },
+        {
+          title: "Book Training Turfs",
+          description: "Reserve synthetic turf and grounds for team practice sessions.",
+          path: "/venues",
+          icon: Calendar,
+          color: "from-amber-600/20 to-gold/20 border-amber-500/30 text-amber-300",
+          cta: "Book Training Slot",
+        },
+        {
+          title: "33+ Official Sports Rules",
+          description: "Official rulebooks, foul clarifications, and coaching guidelines.",
+          path: "/rules",
+          icon: BookOpen,
+          color: "from-gold/15 to-amber-500/15 border-gold/30 text-gold",
+          cta: "Explore Rules",
+        },
+      ];
+    }
+
+    // Default: Player Cards
+    return [
+      {
+        title: "Find Nearby Players",
+        description: "Discover local athletes in your city with GPS distance matching & skill filters.",
+        path: "/players",
+        icon: Users,
+        color: "from-gold/20 to-amber-500/20 border-gold/30 text-gold",
+        cta: "Explore Players",
+      },
+      {
+        title: "Book Courts & Turfs",
+        description: "Reserve synthetic turf, badminton courts & grounds with real-time slot booking.",
+        path: "/venues",
+        icon: Calendar,
+        color: "from-amber-400/20 to-gold/20 border-gold/40 text-gold-light",
+        cta: "Book a Slot",
+      },
+      {
+        title: "Tournaments & Brackets",
+        description: "Register your squad for knockout leagues and view automated match brackets.",
+        path: "/tournaments",
+        icon: Trophy,
+        color: "from-gold/25 to-yellow-500/20 border-gold/50 text-gold",
+        cta: "Join Tournaments",
+      },
+      {
+        title: "Teams & Squads",
+        description: "Join team rosters with invite codes and participate in championships.",
+        path: "/teams",
+        icon: Shield,
+        color: "from-amber-600/20 to-gold/20 border-amber-500/30 text-amber-300",
+        cta: "View Squads",
+      },
+      {
+        title: "Live Scores & Streams",
+        description: "Real-time ball-by-ball updates, live YouTube streams, and official match feeds.",
+        path: "/live",
+        icon: Radio,
+        color: "from-red-500/20 to-rose-500/20 border-red-500/30 text-red-400",
+        cta: "Watch Live",
+        badge: "LIVE NOW",
+      },
+      {
+        title: "33+ Sports Rules Guide",
+        description: "Official rulebooks, foul clarifications, and referee guidelines across all sports.",
+        path: "/rules",
+        icon: BookOpen,
+        color: "from-gold/15 to-amber-500/15 border-gold/30 text-gold",
+        cta: "Read Rules",
+      },
+    ];
+  };
+
+  const featureCards = getFeatureCards();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">

@@ -2,6 +2,8 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import PlayerProfile from "../models/PlayerProfile.js";
+import GroundOwnerProfile from "../models/GroundOwnerProfile.js";
+import CoachProfile from "../models/CoachProfile.js";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -12,6 +14,18 @@ import {
 import { sendVerificationEmail } from "../utils/emailService.js";
 import { recordAuditLog } from "../utils/auditLogger.js";
 import { syncPendingUserInvites } from "./teamController.js";
+
+// Helper: Fetch profile according to role
+export const fetchProfileForUser = async (userId, role) => {
+  if (!userId) return null;
+  if (role === "ground_owner") {
+    return await GroundOwnerProfile.findOne({ userId });
+  } else if (role === "coach") {
+    return await CoachProfile.findOne({ userId });
+  } else {
+    return await PlayerProfile.findOne({ userId });
+  }
+};
 
 // Helper: Check strong password policy
 // Min 8 chars, at least 1 uppercase, 1 number, 1 special character
@@ -33,7 +47,22 @@ const generateSecureOtp = () => {
 // @access  Public
 export const register = async (req, res) => {
   try {
-    const { name, email, password, city, location } = req.body;
+    const {
+      name,
+      email,
+      password,
+      city,
+      location,
+      accountType,
+      role,
+      sport,
+      businessName,
+      contactPhone,
+      phone,
+      yearsOfExperience,
+      certifications,
+      bio,
+    } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Please provide name, email, and password." });
@@ -53,15 +82,53 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "An account with this email already exists. Please log in." });
     }
 
+    // Role assignment strictly from permitted public types
+    let assignedRole = "player";
+    if (accountType === "ground_owner" || role === "ground_owner") {
+      assignedRole = "ground_owner";
+    } else if (accountType === "coach" || role === "coach") {
+      assignedRole = "coach";
+    } else {
+      assignedRole = "player";
+    }
+
     const user = await User.create({
       name: name.trim(),
       email: normalizedEmail,
       password,
       city: city || "Chennai",
       location: location || `${city || "Chennai"}, Tamil Nadu`,
-      hasCompletedProfile: false,
+      hasCompletedProfile: true,
       isEmailVerified: true,
+      role: assignedRole,
     });
+
+    let profile = null;
+    if (assignedRole === "ground_owner") {
+      profile = await GroundOwnerProfile.create({
+        userId: user._id,
+        businessName: (businessName || `${name.trim()}'s Sports Venue`).trim(),
+        contactPhone: (contactPhone || phone || "+91 98765 43210").trim(),
+        city: user.city,
+      });
+    } else if (assignedRole === "coach") {
+      profile = await CoachProfile.create({
+        userId: user._id,
+        sport: (sport || "Cricket").trim(),
+        yearsOfExperience: Number(yearsOfExperience) || 0,
+        certifications: certifications ? (Array.isArray(certifications) ? certifications : [certifications]) : [],
+        city: user.city,
+        phone: (phone || "").trim(),
+        bio: (bio || "").trim(),
+      });
+    } else {
+      profile = await PlayerProfile.create({
+        userId: user._id,
+        sport: (sport || "Cricket").trim(),
+        city: user.city,
+        bio: (bio || "").trim(),
+      });
+    }
 
     // Generate 15-minute access token + 7-day refresh token
     const accessToken = generateAccessToken(user._id, user.role);
@@ -95,8 +162,8 @@ export const register = async (req, res) => {
         isEmailVerified: true,
         createdAt: user.createdAt,
       },
-      profile: null,
-      message: "Registration successful! Welcome to PlaySphere.",
+      profile: profile || null,
+      message: `Registration successful as ${assignedRole.replace("_", " ")}! Welcome to PlaySphere.`,
     });
   } catch (error) {
     console.error("Register error:", error);
@@ -399,7 +466,7 @@ export const login = async (req, res) => {
     // Sync any pending team invites sent to this email address
     syncPendingUserInvites(user).catch(() => {});
 
-    const profile = await PlayerProfile.findOne({ userId: user._id });
+    const profile = await fetchProfileForUser(user._id, user.role);
 
     res.json({
       success: true,
@@ -539,7 +606,7 @@ export const logoutAllDevices = async (req, res) => {
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
-    const profile = await PlayerProfile.findOne({ userId: req.user._id });
+    const profile = await fetchProfileForUser(req.user._id, user?.role || req.user.role);
 
     res.json({
       success: true,

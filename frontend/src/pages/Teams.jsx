@@ -100,13 +100,15 @@ const Teams = () => {
           >
             My Squad Invites
           </Link>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-gold via-amber-400 to-gold-hover hover:from-gold-hover hover:to-amber-500 text-court-950 font-black rounded-xl text-xs shadow-lg shadow-gold/20 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Create New Squad</span>
-          </button>
+          {(user?.role === "coach" || user?.role === "admin" || user?.role === "super_admin") && (
+            <button
+              onClick={() => setModalOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-gold via-amber-400 to-gold-hover hover:from-gold-hover hover:to-amber-500 text-court-950 font-black rounded-xl text-xs shadow-lg shadow-gold/20 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create New Squad</span>
+            </button>
+          )}
         </div>
       </div>
 

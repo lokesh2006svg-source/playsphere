@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { fetchVenues } from "../api";
+import { fetchVenues, createVenue } from "../api";
+import { useAuth } from "../context/AuthContext";
 import SportSelector from "../components/SportSelector";
 import {
   Calendar,
@@ -12,6 +13,11 @@ import {
   Search,
   SlidersHorizontal,
   ExternalLink,
+  Plus,
+  Building2,
+  X,
+  Phone,
+  Sparkles,
 } from "lucide-react";
 
 const VENUE_TYPES = [
@@ -24,6 +30,7 @@ const VENUE_TYPES = [
 ];
 
 const Venues = () => {
+  const { user } = useAuth();
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,6 +39,28 @@ const Venues = () => {
   const [city, setCity] = useState("All");
   const [venueType, setVenueType] = useState("All");
   const [search, setSearch] = useState("");
+
+  // Create Ground Modal State (Ground Owners)
+  const [modalOpen, setModalOpen] = useState(false);
+  const [createData, setCreateData] = useState({
+    name: "",
+    sportType: "Cricket",
+    city: user?.city || "Chennai",
+    address: "",
+    venueType: "private_turf",
+    pricePerHour: 800,
+    openingTime: "06:00",
+    closingTime: "22:00",
+    contactPhone: "",
+  });
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState("");
+
+  const isGroundOwner =
+    user?.role === "ground_owner" ||
+    user?.role === "venue_admin" ||
+    user?.role === "admin" ||
+    user?.role === "super_admin";
 
   const loadVenues = async () => {
     try {
@@ -61,6 +90,39 @@ const Venues = () => {
     loadVenues();
   };
 
+  const handleCreateVenue = async (e) => {
+    e.preventDefault();
+    if (!createData.name.trim() || !createData.address.trim()) {
+      setCreateError("Venue name and street address are required.");
+      return;
+    }
+
+    try {
+      setCreateLoading(true);
+      setCreateError("");
+      const res = await createVenue(createData);
+      if (res.data.success) {
+        setModalOpen(false);
+        setCreateData({
+          name: "",
+          sportType: "Cricket",
+          city: user?.city || "Chennai",
+          address: "",
+          venueType: "private_turf",
+          pricePerHour: 800,
+          openingTime: "06:00",
+          closingTime: "22:00",
+          contactPhone: "",
+        });
+        loadVenues();
+      }
+    } catch (err) {
+      setCreateError(err.response?.data?.message || "Failed to create venue.");
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-[#F5F0E6]">
       {/* Header */}
@@ -75,12 +137,24 @@ const Venues = () => {
           </p>
         </div>
 
-        <Link
-          to="/bookings"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-court-850 hover:bg-court-800 border border-court-700 hover:border-gold/40 text-[#F5F0E6] font-bold rounded-xl text-xs transition-colors self-start sm:self-auto"
-        >
-          <span>My Reservations</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/bookings"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-court-850 hover:bg-court-800 border border-court-700 hover:border-gold/40 text-[#F5F0E6] font-bold rounded-xl text-xs transition-colors self-start sm:self-auto"
+          >
+            <span>My Reservations</span>
+          </Link>
+
+          {isGroundOwner && (
+            <button
+              onClick={() => setModalOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600 hover:from-emerald-600 hover:to-teal-500 text-court-950 font-black rounded-xl text-xs shadow-lg shadow-emerald-500/20 transition-all transform hover:-translate-y-0.5"
+            >
+              <Plus className="w-4 h-4" />
+              <span>List New Ground</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filter Bar */}
@@ -260,6 +334,174 @@ const Venues = () => {
           </div>
         )}
       </div>
+
+      {/* Ground Owner: Create Venue Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-court-900 border border-court-700 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setModalOpen(false)}
+              className="absolute top-5 right-5 text-[#9B9691] hover:text-[#F5F0E6] p-1"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-[#F5F0E6]">List Your Sports Ground / Turf</h3>
+                <p className="text-xs text-[#9B9691]">Set your court details, hourly rate, and opening hours</p>
+              </div>
+            </div>
+
+            {createError && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs font-semibold">
+                {createError}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateVenue} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-[#9B9691] uppercase mb-1">
+                  Ground / Arena Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={createData.name}
+                  onChange={(e) => setCreateData({ ...createData, name: e.target.value })}
+                  placeholder="e.g. Marina Arena Futsal Turf"
+                  className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-[#9B9691] uppercase mb-1">
+                    Sport
+                  </label>
+                  <select
+                    value={createData.sportType}
+                    onChange={(e) => setCreateData({ ...createData, sportType: e.target.value })}
+                    className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl px-3 py-2.5 text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none cursor-pointer"
+                  >
+                    <option value="Cricket" className="bg-court-900">Cricket</option>
+                    <option value="Football" className="bg-court-900">Football</option>
+                    <option value="Badminton" className="bg-court-900">Badminton</option>
+                    <option value="Basketball" className="bg-court-900">Basketball</option>
+                    <option value="Tennis" className="bg-court-900">Tennis</option>
+                    <option value="Volleyball" className="bg-court-900">Volleyball</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#9B9691] uppercase mb-1">
+                    City
+                  </label>
+                  <select
+                    value={createData.city}
+                    onChange={(e) => setCreateData({ ...createData, city: e.target.value })}
+                    className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl px-3 py-2.5 text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none cursor-pointer"
+                  >
+                    <option value="Chennai" className="bg-court-900">Chennai</option>
+                    <option value="Coimbatore" className="bg-court-900">Coimbatore</option>
+                    <option value="Madurai" className="bg-court-900">Madurai</option>
+                    <option value="Trichy" className="bg-court-900">Trichy</option>
+                    <option value="Salem" className="bg-court-900">Salem</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#9B9691] uppercase mb-1">
+                  Street Address
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={createData.address}
+                  onChange={(e) => setCreateData({ ...createData, address: e.target.value })}
+                  placeholder="e.g. 14, Beach Road, Santhome, Chennai"
+                  className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#9B9691] uppercase mb-1">
+                    Price/Hour (₹)
+                  </label>
+                  <input
+                    type="number"
+                    min="100"
+                    step="50"
+                    required
+                    value={createData.pricePerHour}
+                    onChange={(e) => setCreateData({ ...createData, pricePerHour: e.target.value })}
+                    className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl px-3 py-2.5 text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#9B9691] uppercase mb-1">
+                    Opens At
+                  </label>
+                  <input
+                    type="time"
+                    value={createData.openingTime}
+                    onChange={(e) => setCreateData({ ...createData, openingTime: e.target.value })}
+                    className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl px-2 py-2.5 text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#9B9691] uppercase mb-1">
+                    Closes At
+                  </label>
+                  <input
+                    type="time"
+                    value={createData.closingTime}
+                    onChange={(e) => setCreateData({ ...createData, closingTime: e.target.value })}
+                    className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl px-2 py-2.5 text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#9B9691] uppercase mb-1">
+                  Contact Phone for Inquiries
+                </label>
+                <input
+                  type="text"
+                  value={createData.contactPhone}
+                  onChange={(e) => setCreateData({ ...createData, contactPhone: e.target.value })}
+                  placeholder="+91 98765 43210"
+                  className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="px-4 py-2.5 bg-court-800 hover:bg-court-750 text-[#F5F0E6] rounded-xl text-xs font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={createLoading}
+                  className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-court-950 font-black rounded-xl text-xs transition-all disabled:opacity-50"
+                >
+                  {createLoading ? "Listing Ground..." : "List Ground Now"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
