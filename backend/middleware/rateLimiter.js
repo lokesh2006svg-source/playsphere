@@ -1,38 +1,47 @@
 import rateLimit from "express-rate-limit";
 
 /**
- * Login Rate Limiter: Max 100 attempts per 15 minutes per IP
- * skipSuccessfulRequests: true ensures legitimate user logins are not counted against rate limits.
- * Prevents credential stuffing & brute-force attacks while allowing multiple users on same Wi-Fi / proxy.
+ * Login Rate Limiter:
+ * Keyed strictly on the specific user's EMAIL address (not IP).
+ * - Unlimited different users can log in simultaneously from the same IP/Wi-Fi without interference.
+ * - Only counts FAILED login attempts (skipSuccessfulRequests: true).
+ * - Max 5 failed attempts per account within a 15-minute window.
  */
 export const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: Number(process.env.RATE_LIMIT_LOGIN_MAX) || 100,
+  max: Number(process.env.RATE_LIMIT_LOGIN_MAX) || 5, // 5 failed attempts per account
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: true, // Only count failed login attempts
-  validate: { trustProxy: false },
+  skipSuccessfulRequests: true, // Only count failed login attempts; successful logins are free
+  validate: { trustProxy: false, keyGeneratorIpFallback: false, xForwardedForHeader: false },
+  keyGenerator: (req) => {
+    if (req.body && req.body.email && typeof req.body.email === "string") {
+      return `login_email_${req.body.email.toLowerCase().trim()}`;
+    }
+    return `login_ip_${req.ip || "unknown"}`;
+  },
   skip: () => process.env.RATE_LIMIT_DISABLED === "true",
   message: {
     success: false,
-    message: "Too many failed login attempts from this network. Please try again after 15 minutes.",
+    message: "Too many failed login attempts on this account. Please wait 15 minutes before trying again.",
   },
 });
 
 /**
  * Register Rate Limiter:
- * Allows multiple users/devices on the same Wi-Fi / NAT network / demo environment to register smoothly.
+ * Generous threshold per IP (30 signups/hr) to allow multiple real users on college Wi-Fi / shared NAT networks.
+ * Prevents automated registration spam while keeping normal multi-user onboarding seamless.
  */
 export const registerLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: Number(process.env.RATE_LIMIT_REGISTER_MAX) || 250,
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: Number(process.env.RATE_LIMIT_REGISTER_MAX) || 30, // 30 accounts/hour per IP
   standardHeaders: true,
   legacyHeaders: false,
   validate: { trustProxy: false },
   skip: () => process.env.RATE_LIMIT_DISABLED === "true",
   message: {
     success: false,
-    message: "Too many accounts registered from this network recently. Please try again in a few minutes.",
+    message: "Too many accounts registered from this network recently. Please try again later.",
   },
 });
 
