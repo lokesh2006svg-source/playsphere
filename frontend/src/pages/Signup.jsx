@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import DistrictSelector from "../components/DistrictSelector";
 import {
   Trophy,
   Mail,
@@ -369,26 +370,17 @@ const Signup = () => {
             </div>
           )}
 
-          {/* Primary City */}
+          {/* Primary City / District */}
           <div>
             <label className="block text-xs font-semibold text-[#9B9691] uppercase tracking-wider mb-1">
-              Primary City (Tamil Nadu)
+              Primary District (Tamil Nadu)
             </label>
-            <div className="relative">
-              <MapPin className="w-4 h-4 text-gold absolute left-3.5 top-3.5" />
-              <select
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl pl-10 pr-4 py-2.5 text-xs focus:ring-2 focus:ring-gold focus:border-gold focus:outline-none cursor-pointer"
-              >
-                {TAMIL_NADU_CITIES.map((c) => (
-                  <option key={c} value={c} className="bg-court-900 text-[#F5F0E6]">
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <DistrictSelector
+              value={formData.city}
+              onChange={handleChange}
+              name="city"
+              placeholder="Select Home District..."
+            />
           </div>
 
           <button

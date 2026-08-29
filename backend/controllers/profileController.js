@@ -3,20 +3,10 @@ import path from "path";
 import mongoose from "mongoose";
 import PlayerProfile from "../models/PlayerProfile.js";
 import User from "../models/User.js";
+import { TN_DISTRICT_COORDINATES } from "../constants/tnDistricts.js";
 
-// Helper coordinates for default Tamil Nadu cities [lng, lat]
-export const CITY_COORDINATES = {
-  Chennai: [80.2707, 13.0827],
-  Coimbatore: [76.9558, 11.0168],
-  Madurai: [78.1198, 9.9252],
-  Trichy: [78.7047, 10.7905],
-  Tiruchirappalli: [78.7047, 10.7905],
-  Salem: [78.146, 11.6643],
-  Tirunelveli: [77.7567, 8.7139],
-  Erode: [77.7172, 11.341],
-  Vellore: [79.1325, 12.9165],
-  Thanjavur: [79.1378, 10.787],
-};
+// Export coordinates for all 38 Tamil Nadu districts
+export const CITY_COORDINATES = TN_DISTRICT_COORDINATES;
 
 // @desc    Create or update player profile
 // @route   POST /api/profile OR PUT /api/profile

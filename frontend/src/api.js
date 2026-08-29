@@ -139,11 +139,12 @@ export const uploadProfilePhoto = (fileOrFormData) => {
 export const deleteProfilePhoto = () => api.delete("/profile/photo");
 
 // ==========================================
-// 3. SPORTS
+// 3. SPORTS & DISTRICTS
 // ==========================================
 export const fetchSports = () => api.get("/sports");
 export const fetchSportsList = () => api.get("/sports");
 export const fetchSportsStats = () => api.get("/sports/stats");
+export const fetchDistricts = () => api.get("/districts");
 
 // ==========================================
 // 4. PLAYERS & LEADERBOARDS

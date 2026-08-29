@@ -2,19 +2,7 @@ import Venue from "../models/Venue.js";
 import Booking from "../models/Booking.js";
 import GroundOwnerProfile from "../models/GroundOwnerProfile.js";
 import { recordAuditLog } from "../utils/auditLogger.js";
-
-// Helper coordinates for default Tamil Nadu cities [lng, lat]
-const CITY_COORDINATES = {
-  Chennai: [80.2707, 13.0827],
-  Coimbatore: [76.9558, 11.0168],
-  Madurai: [78.1198, 9.9252],
-  Trichy: [78.7047, 10.7905],
-  Salem: [78.146, 11.6643],
-  Tirunelveli: [77.7567, 8.7139],
-  Erode: [77.7172, 11.341],
-  Vellore: [79.1325, 12.9165],
-  Thanjavur: [79.1378, 10.787],
-};
+import { TN_DISTRICT_COORDINATES } from "../constants/tnDistricts.js";
 
 /**
  * Sanitizes venue object, stripping owner personal contact info for regular players.
@@ -224,8 +212,8 @@ export const createVenue = async (req, res) => {
     let resolvedCoords = [80.2707, 13.0827];
     if (coordinates && Array.isArray(coordinates) && coordinates.length === 2) {
       resolvedCoords = [Number(coordinates[0]), Number(coordinates[1])];
-    } else if (CITY_COORDINATES[venueCity]) {
-      resolvedCoords = CITY_COORDINATES[venueCity];
+    } else if (TN_DISTRICT_COORDINATES[venueCity]) {
+      resolvedCoords = TN_DISTRICT_COORDINATES[venueCity];
     }
 
     const venue = await Venue.create({

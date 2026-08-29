@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import SportSelector from "../components/SportSelector";
+import DistrictSelector from "../components/DistrictSelector";
 import { ShieldCheck, Award, Sparkles, CheckCircle2, MapPin, Clock, Camera } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -149,23 +150,14 @@ const ProfileCreate = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-[#9B9691] uppercase tracking-wider mb-1.5">
-                City / Region
+                Home District (Tamil Nadu)
               </label>
-              <div className="relative">
-                <MapPin className="w-4 h-4 text-gold absolute left-3.5 top-3.5" />
-                <select
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl pl-10 pr-4 py-2.5 text-xs focus:ring-2 focus:ring-gold focus:border-gold focus:outline-none cursor-pointer"
-                >
-                  <option value="Chennai" className="bg-court-900">Chennai</option>
-                  <option value="Coimbatore" className="bg-court-900">Coimbatore</option>
-                  <option value="Madurai" className="bg-court-900">Madurai</option>
-                  <option value="Trichy" className="bg-court-900">Trichy</option>
-                  <option value="Salem" className="bg-court-900">Salem</option>
-                </select>
-              </div>
+              <DistrictSelector
+                value={formData.city}
+                onChange={handleChange}
+                name="city"
+                placeholder="Select District..."
+              />
             </div>
 
             <div>

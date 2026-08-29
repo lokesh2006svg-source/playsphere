@@ -31,6 +31,7 @@ import clubsRoutes from "./routes/clubs.js";
 import notificationsRoutes from "./routes/notifications.js";
 import invitesRoutes from "./routes/invites.js";
 import adminRoutes from "./routes/admin.js";
+import districtsRoutes from "./routes/districts.js";
 
 dotenv.config();
 
@@ -131,6 +132,7 @@ app.use("/api/clubs", clubsRoutes);
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api/invites", invitesRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/districts", districtsRoutes);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {

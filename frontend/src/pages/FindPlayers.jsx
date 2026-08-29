@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { fetchNearbyPlayers } from "../api";
 import { useAuth } from "../context/AuthContext";
 import SportSelector from "../components/SportSelector";
+import DistrictSelector from "../components/DistrictSelector";
 import {
   Users,
   MapPin,
@@ -151,23 +152,18 @@ const FindPlayers = () => {
             </select>
           </div>
 
-          {/* City */}
+          {/* City / District */}
           <div>
             <label className="block text-[11px] font-bold text-[#9B9691] uppercase mb-1">
-              City / District
+              District (Tamil Nadu)
             </label>
-            <select
+            <DistrictSelector
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-gold focus:border-gold focus:outline-none cursor-pointer"
-            >
-              <option value="All" className="bg-court-900">All Cities</option>
-              <option value="Chennai" className="bg-court-900">Chennai</option>
-              <option value="Coimbatore" className="bg-court-900">Coimbatore</option>
-              <option value="Madurai" className="bg-court-900">Madurai</option>
-              <option value="Trichy" className="bg-court-900">Trichy</option>
-              <option value="Salem" className="bg-court-900">Salem</option>
-            </select>
+              includeAll={true}
+              allLabel="All 38 Districts"
+              placeholder="All Districts"
+            />
           </div>
 
           {/* Distance Radius Slider */}
