@@ -48,16 +48,16 @@ export const generateRefreshToken = () => {
 export const getRefreshTokenCookieOptions = () => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   maxAge: REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000,
-  path: "/api/auth",
+  path: "/",
 });
 
 export const getClearRefreshTokenCookieOptions = () => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-  path: "/api/auth",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  path: "/",
 });
 
 /**

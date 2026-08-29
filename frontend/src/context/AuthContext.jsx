@@ -40,11 +40,14 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, [token]);
 
-  const setAuthSession = ({ token: newToken, user: newUser, profile: newProfile }) => {
+  const setAuthSession = ({ token: newToken, refreshToken: newRefreshToken, user: newUser, profile: newProfile }) => {
     setToken(newToken);
     setUser(newUser);
     setProfile(newProfile || null);
     localStorage.setItem("playsphere_token", newToken);
+    if (newRefreshToken) {
+      localStorage.setItem("playsphere_refresh_token", newRefreshToken);
+    }
     localStorage.setItem("playsphere_user", JSON.stringify(newUser));
     if (newProfile) {
       localStorage.setItem("playsphere_profile", JSON.stringify(newProfile));
@@ -57,8 +60,8 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await loginUser({ email, password });
       if (res.data.success) {
-        const { token: newToken, user: newUser, profile: newProfile } = res.data;
-        setAuthSession({ token: newToken, user: newUser, profile: newProfile });
+        const { token: newToken, refreshToken: newRefreshToken, user: newUser, profile: newProfile } = res.data;
+        setAuthSession({ token: newToken, refreshToken: newRefreshToken, user: newUser, profile: newProfile });
         return { success: true, user: newUser, hasCompletedProfile: newUser.hasCompletedProfile };
       }
     } catch (error) {
@@ -77,9 +80,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await registerUser(userData);
       if (res.data.success) {
-        const { token: newToken, user: newUser, profile: newProfile } = res.data;
+        const { token: newToken, refreshToken: newRefreshToken, user: newUser, profile: newProfile } = res.data;
         if (newToken && newUser) {
-          setAuthSession({ token: newToken, user: newUser, profile: newProfile });
+          setAuthSession({ token: newToken, refreshToken: newRefreshToken, user: newUser, profile: newProfile });
         }
         return {
           success: true,
@@ -141,6 +144,7 @@ export const AuthProvider = ({ children }) => {
       setToken(null);
       setProfile(null);
       localStorage.removeItem("playsphere_token");
+      localStorage.removeItem("playsphere_refresh_token");
       localStorage.removeItem("playsphere_user");
       localStorage.removeItem("playsphere_profile");
     }
@@ -156,6 +160,7 @@ export const AuthProvider = ({ children }) => {
       setToken(null);
       setProfile(null);
       localStorage.removeItem("playsphere_token");
+      localStorage.removeItem("playsphere_refresh_token");
       localStorage.removeItem("playsphere_user");
       localStorage.removeItem("playsphere_profile");
     }

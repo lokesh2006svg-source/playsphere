@@ -72,15 +72,19 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        const savedRefreshToken = localStorage.getItem("playsphere_refresh_token");
         const refreshRes = await axios.post(
           `${API_BASE_URL}/auth/refresh-token`,
-          {},
+          { refreshToken: savedRefreshToken },
           { withCredentials: true }
         );
 
         if (refreshRes.data.success && refreshRes.data.token) {
           const newToken = refreshRes.data.token;
           localStorage.setItem("playsphere_token", newToken);
+          if (refreshRes.data.refreshToken) {
+            localStorage.setItem("playsphere_refresh_token", refreshRes.data.refreshToken);
+          }
           api.defaults.headers.common.Authorization = `Bearer ${newToken}`;
           processQueue(null, newToken);
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
@@ -89,7 +93,9 @@ api.interceptors.response.use(
       } catch (refreshErr) {
         processQueue(refreshErr, null);
         localStorage.removeItem("playsphere_token");
+        localStorage.removeItem("playsphere_refresh_token");
         localStorage.removeItem("playsphere_user");
+        localStorage.removeItem("playsphere_profile");
         return Promise.reject(refreshErr);
       } finally {
         isRefreshing = false;

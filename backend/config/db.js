@@ -23,9 +23,13 @@ export const connectDB = async () => {
   const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/playsphere";
 
   try {
-    // Attempt direct connection with 10-second timeout
+    // Attempt direct connection with optimized pool and timeout
     await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 8000,
+      maxPoolSize: 50,
+      minPoolSize: 5,
+      connectTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
     });
     dbState.isConnected = true;
     dbState.isMemory = false;

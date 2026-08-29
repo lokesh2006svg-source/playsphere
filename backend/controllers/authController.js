@@ -83,6 +83,7 @@ export const register = async (req, res) => {
     res.status(201).json({
       success: true,
       token: accessToken,
+      refreshToken: rawRefresh,
       user: {
         _id: user._id,
         name: user.name,
@@ -141,6 +142,7 @@ export const verifyEmail = async (req, res) => {
         success: true,
         message: "Email is already verified. Proceeding to your account...",
         token: accessToken,
+        refreshToken: rawRefresh,
         user: {
           _id: user._id,
           name: user.name,
@@ -230,6 +232,7 @@ export const verifyEmail = async (req, res) => {
       success: true,
       message: "Email verified successfully! Welcome to PlaySphere.",
       token: accessToken,
+      refreshToken: rawRefresh,
       user: {
         _id: user._id,
         name: user.name,
@@ -401,6 +404,7 @@ export const login = async (req, res) => {
     res.json({
       success: true,
       token: accessToken,
+      refreshToken: rawRefresh,
       user: {
         _id: user._id,
         name: user.name,
@@ -467,6 +471,7 @@ export const refreshSessionToken = async (req, res) => {
     res.json({
       success: true,
       token: newAccessToken,
+      refreshToken: newRawRefresh,
     });
   } catch (error) {
     console.error("Refresh token error:", error);
