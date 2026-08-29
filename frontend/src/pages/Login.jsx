@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Trophy, Mail, Lock, ArrowRight, Sparkles, UserCheck } from "lucide-react";
+import { Trophy, Mail, Lock, ArrowRight, Sparkles, UserCheck, Eye, EyeOff, AlertCircle } from "lucide-react";
 
 const Login = () => {
   const { login } = useAuth();
@@ -12,6 +12,7 @@ const Login = () => {
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -52,6 +53,7 @@ const Login = () => {
 
   const handleDemoFill = (email, pwd) => {
     setFormData({ email, password: pwd });
+    setError("");
   };
 
   return (
@@ -72,8 +74,9 @@ const Login = () => {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs font-semibold">
-            {error}
+          <div className="mb-4 p-3.5 bg-red-500/15 border border-red-500/40 rounded-xl text-red-300 text-xs font-semibold flex items-start gap-2.5 animate-fade-in">
+            <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+            <span>{error}</span>
           </div>
         )}
 
@@ -90,7 +93,7 @@ const Login = () => {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="demo@playsphere.com"
+                placeholder="athlete@playsphere.com"
                 className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl pl-10 pr-4 py-2.5 text-xs focus:ring-2 focus:ring-gold focus:border-gold focus:outline-none placeholder:text-[#656C7D]"
               />
             </div>
@@ -103,14 +106,22 @@ const Login = () => {
             <div className="relative">
               <Lock className="w-4 h-4 text-gold absolute left-3.5 top-3.5" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 required
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl pl-10 pr-4 py-2.5 text-xs focus:ring-2 focus:ring-gold focus:border-gold focus:outline-none placeholder:text-[#656C7D]"
+                className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl pl-10 pr-10 py-2.5 text-xs focus:ring-2 focus:ring-gold focus:border-gold focus:outline-none placeholder:text-[#656C7D]"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-[#9B9691] hover:text-gold transition-colors focus:outline-none"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
