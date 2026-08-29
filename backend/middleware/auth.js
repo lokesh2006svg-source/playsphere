@@ -74,7 +74,7 @@ export const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, JWT_SECRET);
 
-      req.user = await User.findById(decoded.id);
+      req.user = await User.findById(decoded.id).select("-password -refreshTokens");
       if (!req.user) {
         return res.status(401).json({ message: "User not found with this token." });
       }
@@ -116,7 +116,7 @@ export const optionalProtect = async (req, res, next) => {
     try {
       const token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, JWT_SECRET);
-      req.user = await User.findById(decoded.id);
+      req.user = await User.findById(decoded.id).select("-password -refreshTokens");
     } catch {
       req.user = null;
     }
