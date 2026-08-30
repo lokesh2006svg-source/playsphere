@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import PlayerProfile from "../models/PlayerProfile.js";
+import CoachProfile from "../models/CoachProfile.js";
+import GroundOwnerProfile from "../models/GroundOwnerProfile.js";
 import Venue from "../models/Venue.js";
 import Booking from "../models/Booking.js";
 import Team from "../models/Team.js";
@@ -451,6 +453,38 @@ export const seedDatabase = async () => {
           playerIdNumber: "PS-2026-00008",
         },
       },
+      {
+        name: "Coach R. Ramanathan",
+        email: "coach@playsphere.com",
+        password: "password123",
+        city: "Chennai",
+        location: "Alwarpet, Chennai, Tamil Nadu",
+        role: "coach",
+        hasCompletedProfile: true,
+        coachProfile: {
+          sport: "Cricket",
+          yearsOfExperience: 12,
+          city: "Chennai",
+          phone: "+91 98401 55667",
+          bio: "BCCI Level-2 certified cricket coach and former state division captain.",
+          certifications: ["BCCI Level-2 Coach", "NIS Diploma in Sports Coaching"],
+        },
+      },
+      {
+        name: "S. Vignesh",
+        email: "owner@playsphere.com",
+        password: "password123",
+        city: "Chennai",
+        location: "Marina Beach Road, Chennai, Tamil Nadu",
+        role: "ground_owner",
+        hasCompletedProfile: true,
+        ownerProfile: {
+          businessName: "Marina Grand Sports Arena & Turfs",
+          contactPhone: "+91 98401 23456",
+          city: "Chennai",
+          address: "54 Kamarajar Salai, Marina Beach Road, Chennai",
+        },
+      },
     ];
 
     const seededUsers = [];
@@ -476,6 +510,22 @@ export const seedDatabase = async () => {
           await PlayerProfile.create({
             userId: user._id,
             ...u.profile,
+          });
+        }
+      } else if (u.coachProfile) {
+        let profile = await CoachProfile.findOne({ userId: user._id });
+        if (!profile) {
+          await CoachProfile.create({
+            userId: user._id,
+            ...u.coachProfile,
+          });
+        }
+      } else if (u.ownerProfile) {
+        let profile = await GroundOwnerProfile.findOne({ userId: user._id });
+        if (!profile) {
+          await GroundOwnerProfile.create({
+            userId: user._id,
+            ...u.ownerProfile,
           });
         }
       }

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Trophy, Mail, Lock, ArrowRight, Sparkles, UserCheck, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Trophy, Mail, Lock, ArrowRight, Sparkles, UserCheck, Eye, EyeOff, AlertCircle, Crown, Building2 } from "lucide-react";
 
 const Login = () => {
   const { login } = useAuth();
@@ -137,25 +137,70 @@ const Login = () => {
 
         {/* Quick Demo Accounts for Testing */}
         <div className="mt-6 pt-4 border-t border-court-700 relative z-10">
-          <span className="text-[11px] font-bold text-[#9B9691] uppercase tracking-wider block text-center mb-2.5">
-            Quick Demo Login
-          </span>
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="text-[11px] font-bold text-[#9B9691] uppercase tracking-wider block">
+              1-Click Demo Login Details
+            </span>
+            <span className="text-[10px] text-gold font-mono font-bold bg-gold/10 px-2 py-0.5 rounded border border-gold/30">
+              password123
+            </span>
+          </div>
+
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              onClick={() => handleDemoFill("ananya@playsphere.com", "password123")}
-              className="px-3 py-2 bg-court-800 hover:bg-court-750 text-[#F5F0E6] rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border border-court-700 hover:border-gold/40 transition-colors"
+              onClick={() => handleDemoFill("demo@playsphere.com", "password123")}
+              className="p-2.5 bg-court-950 hover:bg-gold/15 text-[#F5F0E6] rounded-xl text-left border border-gold/40 hover:border-gold transition-all group"
             >
-              <Sparkles className="w-3.5 h-3.5 text-gold" />
-              <span>Ananya (Player)</span>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <Crown className="w-3.5 h-3.5 text-gold" />
+                <span className="text-xs font-bold text-gold">Super Admin</span>
+              </div>
+              <span className="text-[10px] text-[#9B9691] group-hover:text-[#F5F0E6] block truncate">
+                demo@playsphere.com
+              </span>
             </button>
+
             <button
               type="button"
-              onClick={() => handleDemoFill("karthik@playsphere.com", "password123")}
-              className="px-3 py-2 bg-court-800 hover:bg-court-750 text-[#F5F0E6] rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border border-court-700 hover:border-gold/40 transition-colors"
+              onClick={() => handleDemoFill("ananya@playsphere.com", "password123")}
+              className="p-2.5 bg-court-950 hover:bg-court-800 text-[#F5F0E6] rounded-xl text-left border border-court-750 hover:border-gold/40 transition-all group"
             >
-              <UserCheck className="w-3.5 h-3.5 text-blue-400" />
-              <span>Karthik (Coach)</span>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <Sparkles className="w-3.5 h-3.5 text-gold-light" />
+                <span className="text-xs font-bold text-[#F5F0E6]">Athlete Player</span>
+              </div>
+              <span className="text-[10px] text-[#9B9691] group-hover:text-[#F5F0E6] block truncate">
+                ananya@playsphere.com
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleDemoFill("coach@playsphere.com", "password123")}
+              className="p-2.5 bg-court-950 hover:bg-court-800 text-[#F5F0E6] rounded-xl text-left border border-blue-500/30 hover:border-blue-500 transition-all group"
+            >
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <UserCheck className="w-3.5 h-3.5 text-blue-400" />
+                <span className="text-xs font-bold text-blue-300">Certified Coach</span>
+              </div>
+              <span className="text-[10px] text-[#9B9691] group-hover:text-[#F5F0E6] block truncate">
+                coach@playsphere.com
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleDemoFill("owner@playsphere.com", "password123")}
+              className="p-2.5 bg-court-950 hover:bg-court-800 text-[#F5F0E6] rounded-xl text-left border border-emerald-500/30 hover:border-emerald-500 transition-all group"
+            >
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-xs font-bold text-emerald-300">Ground Owner</span>
+              </div>
+              <span className="text-[10px] text-[#9B9691] group-hover:text-[#F5F0E6] block truncate">
+                owner@playsphere.com
+              </span>
             </button>
           </div>
         </div>
