@@ -1,5 +1,13 @@
 # 🏆 PlaySphere — Unified Sports Community Platform
 
+> **Live Deployment Links:**
+> - 🌐 **Frontend Web App (Vercel)**: [https://playsphere-eight.vercel.app](https://playsphere-eight.vercel.app)
+> - 🚀 **Backend REST API (Render)**: [https://playsphere-zo9o.onrender.com](https://playsphere-zo9o.onrender.com)
+> - 🏥 **Live Health Status Probe**: [https://playsphere-zo9o.onrender.com/api/health](https://playsphere-zo9o.onrender.com/api/health)
+> - 📦 **GitHub Source Repository**: [https://github.com/lokesh2006svg-source/playsphere](https://github.com/lokesh2006svg-source/playsphere)
+>
+> **Super Admin Credentials**: `demo@playsphere.com` / `password123`
+
 **PlaySphere** is a production-ready, full-stack sports community platform designed for athletes, club managers, venue owners, and sports federations. It centralizes player discovery, court/turf reservations, tournament knockout leagues with visual brackets, real-time live scoring with embedded YouTube broadcasts, an AI rules referee with speech recognition, and verified governing sports bodies across 33+ sports with localized Tamil Nadu data (Chennai, Coimbatore, Madurai, Trichy, Salem).
 
 ---
