@@ -157,6 +157,22 @@ export const register = async (req, res) => {
     // Sync any pending team invites sent to this email address
     syncPendingUserInvites(user).catch(() => {});
 
+    // Emit real-time newPlayerJoined event for live directories
+    try {
+      const io = req.app?.get("io");
+      if (io) {
+        io.emit("newPlayerJoined", {
+          userId: user._id,
+          name: user.name,
+          sport: profile?.sport || "Multi-Sport",
+          city: user.city,
+          role: user.role,
+        });
+      }
+    } catch (err) {
+      console.warn("Socket emit error:", err.message);
+    }
+
     res.status(201).json({
       success: true,
       token: accessToken,

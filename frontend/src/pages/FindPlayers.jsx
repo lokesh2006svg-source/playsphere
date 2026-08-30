@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { io } from "socket.io-client";
 import { fetchNearbyPlayers } from "../api";
 import { useAuth } from "../context/AuthContext";
 import SportSelector from "../components/SportSelector";
@@ -67,6 +68,31 @@ const FindPlayers = () => {
       searchPlayers();
     }, 200);
     return () => clearTimeout(timer);
+  }, [sport, skillLevel, maxDistanceKm, city, search]);
+
+  // Real-time listener: Auto-refresh directory when any player registers or updates profile anywhere
+  useEffect(() => {
+    let socket;
+    try {
+      const socketUrl = import.meta.env.VITE_API_BASE_URL
+        ? import.meta.env.VITE_API_BASE_URL.replace("/api", "")
+        : (import.meta.env.PROD ? "https://playsphere-zo9o.onrender.com" : window.location.origin);
+      socket = io(socketUrl);
+
+      socket.on("newPlayerJoined", () => {
+        searchPlayers();
+      });
+
+      socket.on("playerUpdated", () => {
+        searchPlayers();
+      });
+    } catch (err) {
+      console.warn("Real-time socket sync error:", err);
+    }
+
+    return () => {
+      if (socket) socket.disconnect();
+    };
   }, [sport, skillLevel, maxDistanceKm, city, search]);
 
   const handleGetLocation = () => {

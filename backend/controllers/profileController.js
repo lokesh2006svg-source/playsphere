@@ -139,6 +139,22 @@ export const createOrUpdateProfile = async (req, res) => {
       returnDocument: "after",
     });
 
+    // Emit real-time playerUpdated event for live player directory sync
+    try {
+      const io = req.app?.get("io");
+      if (io) {
+        io.emit("playerUpdated", {
+          userId: req.user._id,
+          name: updatedUser?.name,
+          sport: profile?.sport,
+          city: profile?.city,
+          role: req.user.role,
+        });
+      }
+    } catch (err) {
+      console.warn("Socket emit error:", err.message);
+    }
+
     res.json({
       success: true,
       message: "Profile updated successfully.",
