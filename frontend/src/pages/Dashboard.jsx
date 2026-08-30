@@ -291,18 +291,28 @@ const Dashboard = () => {
               </div>
 
               <div>
-                <span className="text-[10px] text-gold font-mono font-bold block">
-                  {profile?.playerIdNumber || "PS-MEMBER"}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-gold font-mono font-bold block">
+                    {profile?.playerIdNumber || "PS-MEMBER"}
+                  </span>
+                  <span className="text-[9px] px-1.5 py-0.2 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold rounded">
+                    ACTIVE
+                  </span>
+                </div>
                 <h4 className="font-bold text-[#F5F0E6] text-sm">{user.name}</h4>
                 <p className="text-[11px] text-[#9B9691]">
-                  {profile?.sport || "Multi-Sport"} • {profile?.skillLevel || "Intermediate"}
+                  {profile?.sport || "Multi-Sport"} • {profile?.skillLevel || "Intermediate"} • {profile?.city || user?.city || "Chennai"}
                 </p>
+                <div className="text-[10px] text-[#9B9691] flex items-center gap-2 mt-1">
+                  <span>📅 Member Since: <strong className="text-[#F5F0E6]">{new Date(user.createdAt || profile?.joinedDate || Date.now()).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}</strong></span>
+                  <span>•</span>
+                  <span>🕒 Active: <strong className="text-gold">{new Date(user.lastLoginAt || user.createdAt || Date.now()).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</strong></span>
+                </div>
                 <Link
                   to="/profile"
                   className="text-[10px] font-bold text-gold hover:underline inline-block mt-1"
                 >
-                  View Digital Sports Pass →
+                  View Full Profile & Passport →
                 </Link>
               </div>
             </div>

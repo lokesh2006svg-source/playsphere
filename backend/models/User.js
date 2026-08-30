@@ -94,6 +94,11 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    // Last login timestamp
+    lastLoginAt: {
+      type: Date,
+      default: Date.now,
+    },
     // Refresh Token Rotation (Hashed tokens stored in DB)
     refreshTokens: [refreshTokenSchema],
   },

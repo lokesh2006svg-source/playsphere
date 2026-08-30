@@ -11,6 +11,9 @@ import {
   Edit3,
   MapPin,
   Calendar,
+  Clock,
+  ShieldCheck,
+  Sparkles,
   Star,
   CheckCircle,
   Share2,
@@ -306,6 +309,85 @@ const Profile = () => {
             "{profile.bio}"
           </div>
         )}
+      </div>
+
+      {/* Athlete Full Account & Login Details Card */}
+      <div className="bg-gradient-to-r from-court-950 via-court-900 to-court-950 border border-gold/30 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden shadow-gold/5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-court-700 pb-3 mb-4 gap-2">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-gold" />
+            <h3 className="text-sm font-black uppercase tracking-wider text-[#F5F0E6]">
+              Verified Account Passport & Login Details
+            </h3>
+          </div>
+          <span className="px-2.5 py-0.5 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold rounded-full">
+            AUTHENTICATED SESSION
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+          <div className="p-3.5 bg-court-900/90 border border-court-750 rounded-2xl">
+            <span className="text-[10px] text-[#9B9691] font-bold uppercase block mb-1 flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-gold" /> Account Created
+            </span>
+            <p className="font-bold text-[#F5F0E6]">
+              {new Date(user?.createdAt || profile?.joinedDate || Date.now()).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+            </p>
+            <span className="text-[10px] text-[#656C7D] block mt-0.5">
+              {new Date(user?.createdAt || Date.now()).toLocaleTimeString("en-IN", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+          </div>
+
+          <div className="p-3.5 bg-court-900/90 border border-court-750 rounded-2xl">
+            <span className="text-[10px] text-[#9B9691] font-bold uppercase block mb-1 flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-gold" /> Last Login Session
+            </span>
+            <p className="font-bold text-amber-300">
+              {new Date(user?.lastLoginAt || user?.createdAt || Date.now()).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+            </p>
+            <span className="text-[10px] text-gold-glow block mt-0.5">
+              {new Date(user?.lastLoginAt || user?.createdAt || Date.now()).toLocaleTimeString("en-IN", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+          </div>
+
+          <div className="p-3.5 bg-court-900/90 border border-court-750 rounded-2xl">
+            <span className="text-[10px] text-[#9B9691] font-bold uppercase block mb-1 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-gold" /> Pass Membership
+            </span>
+            <p className="font-bold text-gold font-mono truncate">
+              {profile?.playerIdNumber || "PS-2026-MEMBER"}
+            </p>
+            <span className="text-[10px] text-[#9B9691] capitalize block mt-0.5">
+              Role: {user?.role ? user.role.replace("_", " ") : "Player"}
+            </span>
+          </div>
+
+          <div className="p-3.5 bg-court-900/90 border border-court-750 rounded-2xl">
+            <span className="text-[10px] text-[#9B9691] font-bold uppercase block mb-1 flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-gold" /> Registered District
+            </span>
+            <p className="font-bold text-[#F5F0E6] truncate">
+              {profile?.city || user?.city || "Chennai"}
+            </p>
+            <span className="text-[10px] text-emerald-400 block mt-0.5">
+              Tamil Nadu, India
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Circular Image Crop & Preview Modal */}

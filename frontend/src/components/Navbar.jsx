@@ -198,6 +198,9 @@ const Navbar = () => {
                               </span>
                             )}
                           </div>
+                          <p className="text-[10px] text-[#656C7D] mt-1.5">
+                            📅 Member Since: {new Date(user?.createdAt || profile?.joinedDate || Date.now()).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                          </p>
                         </div>
 
                         {isAdmin && (

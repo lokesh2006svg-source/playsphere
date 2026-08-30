@@ -187,6 +187,7 @@ export const register = async (req, res) => {
         role: user.role,
         isEmailVerified: true,
         createdAt: user.createdAt,
+        lastLoginAt: user.lastLoginAt || user.createdAt,
       },
       profile: profile || null,
       message: `Registration successful as ${assignedRole.replace("_", " ")}! Welcome to PlaySphere.`,
@@ -477,6 +478,7 @@ export const login = async (req, res) => {
 
     // Clean expired tokens & append new refresh token hash
     const now = new Date();
+    user.lastLoginAt = now;
     user.refreshTokens = (user.refreshTokens || []).filter((t) => new Date(t.expiresAt) > now);
     user.refreshTokens.push({
       tokenHash,
@@ -508,6 +510,7 @@ export const login = async (req, res) => {
         role: user.role,
         isEmailVerified: true,
         createdAt: user.createdAt,
+        lastLoginAt: user.lastLoginAt,
       },
       profile: profile || null,
     });
