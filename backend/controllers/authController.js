@@ -28,14 +28,10 @@ export const fetchProfileForUser = async (userId, role) => {
   }
 };
 
-// Helper: Check strong password policy
-// Min 8 chars, at least 1 uppercase, 1 number, 1 special character
+// Helper: Check password policy (minimum 6 characters)
 export const isStrongPassword = (pwd) => {
-  if (!pwd || typeof pwd !== "string" || pwd.length < 8) return false;
-  const hasUpper = /[A-Z]/.test(pwd);
-  const hasNumber = /\d/.test(pwd);
-  const hasSpecial = /[@$!%*?&#^()_+=\-[\]{};:'",.<>/?\\|]/.test(pwd);
-  return hasUpper && hasNumber && hasSpecial;
+  if (!pwd || typeof pwd !== "string" || pwd.length < 6) return false;
+  return true;
 };
 
 // Helper: Cryptographically secure 6-digit OTP generator
@@ -71,8 +67,7 @@ export const register = async (req, res) => {
 
     if (!isStrongPassword(password)) {
       return res.status(400).json({
-        message:
-          "Password does not meet security requirements: Minimum 8 characters, at least one uppercase letter (A-Z), one number (0-9), and one special character.",
+        message: "Password must be at least 6 characters long.",
       });
     }
 
