@@ -41,6 +41,7 @@ const Profile = () => {
   const [photoSuccess, setPhotoSuccess] = useState("");
 
   const [formData, setFormData] = useState({
+    name: user?.name || "",
     sport: profile?.sport || "Cricket",
     skillLevel: profile?.skillLevel || "intermediate",
     city: profile?.city || user?.city || "Chennai",
@@ -51,17 +52,16 @@ const Profile = () => {
   });
 
   useEffect(() => {
-    if (profile) {
-      setFormData({
-        sport: profile.sport || "Cricket",
-        skillLevel: profile.skillLevel || "intermediate",
-        city: profile.city || user?.city || "Chennai",
-        bio: profile.bio || "",
-        phone: profile.phone || "",
-        preferredPlayTime: profile.preferredPlayTime || "Evenings (5 PM - 8 PM)",
-        profilePhoto: profile.profilePhoto || "",
-      });
-    }
+    setFormData({
+      name: user?.name || "",
+      sport: profile?.sport || "Cricket",
+      skillLevel: profile?.skillLevel || "intermediate",
+      city: profile?.city || user?.city || "Chennai",
+      bio: profile?.bio || "",
+      phone: profile?.phone || "",
+      preferredPlayTime: profile?.preferredPlayTime || "Evenings (5 PM - 8 PM)",
+      profilePhoto: profile?.profilePhoto || "",
+    });
   }, [profile, user]);
 
   useEffect(() => {
@@ -423,6 +423,19 @@ const Profile = () => {
           )}
 
           <form onSubmit={handleUpdate} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-[#9B9691] uppercase mb-1">
+                Athlete Full Name
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Your full name"
+                className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-gold focus:border-gold focus:outline-none"
+              />
+            </div>
+
             <div>
               <label className="block text-xs font-bold text-[#9B9691] uppercase mb-1">
                 Primary Sport

@@ -166,12 +166,27 @@ export const seedDatabase = async () => {
       sport: "Cricket",
       city: "Chennai",
       stateBodyId: tnca._id,
+      districtBodyId: null,
       homeGround: "Marina Beach Grounds / Chepauk Nets",
       foundedYear: 1998,
       contactEmail: "marinacricket@playsphere.com",
       isVerified: true,
       description: "Premier weekend cricket squad competing in Chennai division tournaments.",
       memberCount: 28,
+    });
+
+    const chennaiUnitedFC = await safeUpsert(Club, { name: "Chennai United Football Club", city: "Chennai", sport: "Football" }, {
+      name: "Chennai United Football Club",
+      sport: "Football",
+      city: "Chennai",
+      stateBodyId: tnfa._id,
+      districtBodyId: cfa._id,
+      homeGround: "Jawaharlal Nehru Stadium B-Ground",
+      foundedYear: 2004,
+      contactEmail: "chennaiunited@playsphere.com",
+      isVerified: true,
+      description: "CFA Senior Division contender with active youth development academy.",
+      memberCount: 35,
     });
 
     const kovaiHoops = await safeUpsert(Club, { name: "Kovai Basketball Academy", city: "Coimbatore", sport: "Basketball" }, {
@@ -188,6 +203,20 @@ export const seedDatabase = async () => {
       memberCount: 45,
     });
 
+    const kovaiSmashers = await safeUpsert(Club, { name: "Coimbatore Smashers Badminton Club", city: "Coimbatore", sport: "Badminton" }, {
+      name: "Coimbatore Smashers Badminton Club",
+      sport: "Badminton",
+      city: "Coimbatore",
+      stateBodyId: null,
+      districtBodyId: null,
+      homeGround: "Nehru Stadium Badminton Complex",
+      foundedYear: 2016,
+      contactEmail: "kovaismashers@playsphere.com",
+      isVerified: true,
+      description: "Competitive badminton squad with elite coaching for state ranked juniors.",
+      memberCount: 32,
+    });
+
     const maduraiBulls = await safeUpsert(Club, { name: "Madurai Veeran Kabaddi Club", city: "Madurai", sport: "Kabaddi" }, {
       name: "Madurai Veeran Kabaddi Club",
       sport: "Kabaddi",
@@ -200,6 +229,48 @@ export const seedDatabase = async () => {
       isVerified: true,
       description: "Fierce local kabaddi powerhouse known for pro-kabaddi academy talent.",
       memberCount: 22,
+    });
+
+    const maduraiSilambam = await safeUpsert(Club, { name: "Madurai Silambam Martial Academy", city: "Madurai", sport: "Silambam" }, {
+      name: "Madurai Silambam Martial Academy",
+      sport: "Silambam",
+      city: "Madurai",
+      stateBodyId: tnsa._id,
+      districtBodyId: null,
+      homeGround: "Tamukkam Grounds",
+      foundedYear: 1995,
+      contactEmail: "maduraisilambam@playsphere.com",
+      isVerified: true,
+      description: "Preserving traditional Tamil warrior martial arts and weapon fighting techniques.",
+      memberCount: 40,
+    });
+
+    const rockfortCricket = await safeUpsert(Club, { name: "Rockfort Cricket Club", city: "Trichy", sport: "Cricket" }, {
+      name: "Rockfort Cricket Club",
+      sport: "Cricket",
+      city: "Trichy",
+      stateBodyId: tnca._id,
+      districtBodyId: tdca._id,
+      homeGround: "Anna Stadium Cricket Grounds",
+      foundedYear: 2008,
+      contactEmail: "rockfortcricket@playsphere.com",
+      isVerified: true,
+      description: "TDCA division 1 champion team promoting grassroot talent across Central Tamil Nadu.",
+      memberCount: 30,
+    });
+
+    const salemStrikers = await safeUpsert(Club, { name: "Salem Strikers Football Club", city: "Salem", sport: "Football" }, {
+      name: "Salem Strikers Football Club",
+      sport: "Football",
+      city: "Salem",
+      stateBodyId: tnfa._id,
+      districtBodyId: null,
+      homeGround: "Mahatma Gandhi Stadium",
+      foundedYear: 2015,
+      contactEmail: "salemstrikers@playsphere.com",
+      isVerified: true,
+      description: "Fast-growing community football club fielding youth teams in state cups.",
+      memberCount: 26,
     });
 
     // 3. Seed Users & Profiles

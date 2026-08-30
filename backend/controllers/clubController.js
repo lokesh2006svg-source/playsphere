@@ -1,5 +1,18 @@
 import Club from "../models/Club.js";
 
+// Helper to check if a filter value represents 'All'
+const isAllFilter = (val) => {
+  if (!val) return true;
+  const s = String(val).trim().toLowerCase();
+  return (
+    s === "all" ||
+    s === "all sports" ||
+    s === "all districts" ||
+    s === "all tamil nadu" ||
+    s.startsWith("all ")
+  );
+};
+
 // @desc    Get all sports clubs
 // @route   GET /api/clubs
 // @access  Public
@@ -8,19 +21,28 @@ export const getClubs = async (req, res) => {
     const { sport, city, search } = req.query;
     const query = {};
 
-    if (sport && sport !== "All" && sport !== "All Sports") {
-      query.sport = new RegExp(sport, "i");
+    if (!isAllFilter(sport)) {
+      query.sport = new RegExp(`^${sport.trim()}$`, "i");
     }
-    if (city && city !== "All") {
-      query.city = new RegExp(city, "i");
+
+    if (!isAllFilter(city)) {
+      query.city = new RegExp(city.trim(), "i");
     }
-    if (search) {
-      query.name = new RegExp(search, "i");
+
+    if (search && search.trim()) {
+      const sRegex = new RegExp(search.trim(), "i");
+      query.$or = [
+        { name: sRegex },
+        { description: sRegex },
+        { homeGround: sRegex },
+        { city: sRegex },
+        { sport: sRegex },
+      ];
     }
 
     const clubs = await Club.find(query)
-      .populate("stateBodyId", "name shortName")
-      .populate("districtBodyId", "name shortName")
+      .populate("stateBodyId", "name shortName website contactEmail")
+      .populate("districtBodyId", "name shortName website contactEmail")
       .sort({ foundedYear: 1 });
 
     res.json({ success: true, count: clubs.length, clubs });

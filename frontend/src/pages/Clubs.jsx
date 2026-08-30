@@ -39,13 +39,11 @@ const Clubs = () => {
   };
 
   useEffect(() => {
-    loadClubs();
-  }, [sport, city]);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    loadClubs();
-  };
+    const timer = setTimeout(() => {
+      loadClubs();
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [sport, city, search]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-[#F5F0E6]">

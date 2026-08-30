@@ -104,15 +104,18 @@ export const AuthProvider = ({ children }) => {
       const res = await saveProfile(profileData);
       if (res.data.success) {
         const updatedProfile = res.data.profile;
+        const updatedUser = res.data.user || {
+          ...user,
+          name: profileData.name || user?.name,
+          hasCompletedProfile: true,
+          city: updatedProfile.city,
+        };
         setProfile(updatedProfile);
-        localStorage.setItem("playsphere_profile", JSON.stringify(updatedProfile));
-
-        // Mark profile completed on user
-        const updatedUser = { ...user, hasCompletedProfile: true, city: updatedProfile.city };
         setUser(updatedUser);
+        localStorage.setItem("playsphere_profile", JSON.stringify(updatedProfile));
         localStorage.setItem("playsphere_user", JSON.stringify(updatedUser));
 
-        return { success: true, profile: updatedProfile };
+        return { success: true, profile: updatedProfile, user: updatedUser };
       }
     } catch (error) {
       return {

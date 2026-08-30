@@ -87,13 +87,24 @@ const playerProfileSchema = new mongoose.Schema(
 // 2dsphere index for geospatial proximity search
 playerProfileSchema.index({ location: "2dsphere" });
 
-// Helper to generate player ID like PS-2026-00001
+// Helper to generate unique player ID like PS-2026-00001
 playerProfileSchema.pre("save", async function () {
   if (!this.playerIdNumber) {
     const year = new Date().getFullYear();
     const count = await mongoose.model("PlayerProfile").countDocuments();
-    const sequence = String(count + 1).padStart(5, "0");
-    this.playerIdNumber = `PS-${year}-${sequence}`;
+    let sequence = count + 1;
+    let isUnique = false;
+
+    while (!isUnique) {
+      const candidate = `PS-${year}-${String(sequence).padStart(5, "0")}`;
+      const existing = await mongoose.model("PlayerProfile").findOne({ playerIdNumber: candidate });
+      if (!existing) {
+        this.playerIdNumber = candidate;
+        isUnique = true;
+      } else {
+        sequence++;
+      }
+    }
   }
 });
 

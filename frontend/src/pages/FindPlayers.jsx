@@ -16,6 +16,7 @@ import {
   MessageSquare,
   Sparkles,
   SlidersHorizontal,
+  Search,
 } from "lucide-react";
 
 const FindPlayers = () => {
@@ -29,8 +30,9 @@ const FindPlayers = () => {
   // Filters
   const [sport, setSport] = useState("All");
   const [skillLevel, setSkillLevel] = useState("All");
-  const [maxDistanceKm, setMaxDistanceKm] = useState(15);
-  const [city, setCity] = useState(user?.city || "Chennai");
+  const [maxDistanceKm, setMaxDistanceKm] = useState(25);
+  const [city, setCity] = useState(user?.city || "All");
+  const [search, setSearch] = useState("");
 
   const searchPlayers = async (customCoords = coords) => {
     try {
@@ -39,7 +41,8 @@ const FindPlayers = () => {
         maxDistanceKm,
         sport,
         skillLevel,
-        city,
+        city: city === "All" ? undefined : city,
+        search: search.trim() ? search.trim() : undefined,
       };
 
       if (customCoords) {
@@ -60,8 +63,11 @@ const FindPlayers = () => {
   };
 
   useEffect(() => {
-    searchPlayers();
-  }, [sport, skillLevel, maxDistanceKm, city]);
+    const timer = setTimeout(() => {
+      searchPlayers();
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [sport, skillLevel, maxDistanceKm, city, search]);
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
@@ -115,9 +121,22 @@ const FindPlayers = () => {
 
       {/* Filter Bar */}
       <div className="bg-court-900 border border-court-700 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4 shadow-gold/5">
-        <div className="flex items-center gap-2 text-xs font-bold text-[#F5F0E6] uppercase tracking-wider">
-          <SlidersHorizontal className="w-4 h-4 text-gold" />
-          <span>Search & Radius Filters</span>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-[#F5F0E6] uppercase tracking-wider">
+            <SlidersHorizontal className="w-4 h-4 text-gold" />
+            <span>Search & Radius Filters</span>
+          </div>
+
+          <div className="relative flex-1 max-w-sm">
+            <Search className="w-4 h-4 text-gold absolute left-3.5 top-3" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by player name, sport, ID..."
+              className="w-full bg-court-950 border border-court-700 text-[#F5F0E6] rounded-xl pl-10 pr-4 py-2 text-xs focus:ring-2 focus:ring-gold focus:border-gold focus:outline-none placeholder:text-[#656C7D]"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

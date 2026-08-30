@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import PlayerProfile from "../models/PlayerProfile.js";
 import GroundOwnerProfile from "../models/GroundOwnerProfile.js";
 import CoachProfile from "../models/CoachProfile.js";
+import { TN_DISTRICT_COORDINATES } from "../constants/tnDistricts.js";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -104,6 +105,11 @@ export const register = async (req, res) => {
     });
 
     let profile = null;
+    let resolvedCoordinates = [80.2707, 13.0827]; // Chennai default
+    if (user.city && TN_DISTRICT_COORDINATES[user.city]) {
+      resolvedCoordinates = TN_DISTRICT_COORDINATES[user.city];
+    }
+
     if (assignedRole === "ground_owner") {
       profile = await GroundOwnerProfile.create({
         userId: user._id,
@@ -126,6 +132,10 @@ export const register = async (req, res) => {
         userId: user._id,
         sport: (sport || "Cricket").trim(),
         city: user.city,
+        location: {
+          type: "Point",
+          coordinates: resolvedCoordinates,
+        },
         bio: (bio || "").trim(),
       });
     }
@@ -137,7 +147,7 @@ export const register = async (req, res) => {
     user.refreshTokens.push({
       tokenHash,
       expiresAt,
-      userAgent: req.headers["user-agent"] || "",
+      userAgent: req.headers?.["user-agent"] || "",
       ip: req.ip || "",
     });
     await user.save();
@@ -204,7 +214,7 @@ export const verifyEmail = async (req, res) => {
 
       res.cookie("refreshToken", rawRefresh, getRefreshTokenCookieOptions());
 
-      const profile = await PlayerProfile.findOne({ userId: user._id });
+      const profile = await fetchProfileForUser(user._id, user.role);
       return res.json({
         success: true,
         message: "Email is already verified. Proceeding to your account...",
@@ -293,7 +303,7 @@ export const verifyEmail = async (req, res) => {
 
     res.cookie("refreshToken", rawRefresh, getRefreshTokenCookieOptions());
 
-    const profile = await PlayerProfile.findOne({ userId: user._id });
+    const profile = await fetchProfileForUser(user._id, user.role);
 
     res.json({
       success: true,
@@ -455,7 +465,7 @@ export const login = async (req, res) => {
     user.refreshTokens.push({
       tokenHash,
       expiresAt,
-      userAgent: req.headers["user-agent"] || "",
+      userAgent: req.headers?.["user-agent"] || "",
       ip: req.ip || "",
     });
     await user.save();
@@ -527,7 +537,7 @@ export const refreshSessionToken = async (req, res) => {
     user.refreshTokens.push({
       tokenHash: newHash,
       expiresAt: newExpiresAt,
-      userAgent: req.headers["user-agent"] || "",
+      userAgent: req.headers?.["user-agent"] || "",
       ip: req.ip || "",
     });
     await user.save();

@@ -1,0 +1,95 @@
+name: PlaySphere CI/CD & Automatic Deployment Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  # Job 1: Test and Verify Backend API
+  test-backend:
+    name: 🧪 Run Backend Automated Tests & Persistence Checks
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: 📥 Check out repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package.json
+
+      - name: 📦 Install Backend Dependencies
+        working-directory: backend
+        run: npm ci || npm install
+
+      - name: 🚀 Run Backend Test Suite (Multi-Role, Live Sync, MongoDB Persistence)
+        working-directory: backend
+        env:
+          MONGO_URI: mongodb://127.0.0.1:27017/playsphere
+          NODE_ENV: test
+          JWT_SECRET: ci_cd_super_secret_jwt_key_2026
+          JWT_REFRESH_SECRET: ci_cd_super_secret_refresh_jwt_key_2026
+        run: npm test
+
+  # Job 2: Build & Validate Frontend Web App
+  build-frontend:
+    name: 🏗️ Validate Frontend Production Build (Vite + React)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Check out repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package.json
+
+      - name: 📦 Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci || npm install
+
+      - name: 🛠️ Build Frontend Bundle
+        working-directory: frontend
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || 'https://playsphere-backend.onrender.com/api' }}
+          VITE_SOCKET_URL: ${{ secrets.VITE_SOCKET_URL || 'https://playsphere-backend.onrender.com' }}
+        run: npm run build
+
+  # Job 3: Trigger Automatic Deployment on Success (Push to main only)
+  deploy-auto:
+    name: 🚀 Automatic Production Deployment Trigger
+    needs: [test-backend, build-frontend]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🌐 Trigger Render Backend Deploy Webhook (if configured)
+        if: env.RENDER_DEPLOY_HOOK != ''
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          echo "Triggering Render automatic deploy hook..."
+          curl -X POST "$RENDER_DEPLOY_HOOK"
+
+      - name: ✅ Deployment Pipeline Status
+        run: |
+          echo "==================================================================="
+          echo "🎉 PlaySphere CI/CD Build & Verification Completed Successfully!"
+          echo "   Frontend: Auto-deployed via Vercel Git Integration"
+          echo "   Backend: Auto-deployed via Render / Railway Blueprint"
+          echo "==================================================================="

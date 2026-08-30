@@ -83,6 +83,11 @@ export const validateRegister = [
  * Validation rules for user profile
  */
 export const validateProfile = [
+  body("name")
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 80 })
+    .withMessage("Name must be between 2 and 80 characters."),
   body("sport").optional().trim().isLength({ max: 50 }),
   body("skillLevel")
     .optional()

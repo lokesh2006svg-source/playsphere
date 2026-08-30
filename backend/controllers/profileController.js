@@ -2,6 +2,8 @@ import fs from "fs";
 import path from "path";
 import mongoose from "mongoose";
 import PlayerProfile from "../models/PlayerProfile.js";
+import CoachProfile from "../models/CoachProfile.js";
+import GroundOwnerProfile from "../models/GroundOwnerProfile.js";
 import User from "../models/User.js";
 import { TN_DISTRICT_COORDINATES } from "../constants/tnDistricts.js";
 
@@ -14,6 +16,7 @@ export const CITY_COORDINATES = TN_DISTRICT_COORDINATES;
 export const createOrUpdateProfile = async (req, res) => {
   try {
     const {
+      name,
       sport,
       secondarySports,
       skillLevel,
@@ -24,10 +27,15 @@ export const createOrUpdateProfile = async (req, res) => {
       preferredPlayTime,
       profilePhoto,
       badges,
+      businessName,
+      contactPhone,
+      yearsOfExperience,
+      certifications,
       coordinates, // [lng, lat]
     } = req.body;
 
-    let profile = await PlayerProfile.findOne({ userId: req.user._id });
+    const userRole = req.user.role || "player";
+    let profile = null;
 
     // Determine coordinates based on provided lat/lng or selected city
     let resolvedCoordinates = [80.2707, 13.0827]; // Chennai default
@@ -37,63 +45,105 @@ export const createOrUpdateProfile = async (req, res) => {
       resolvedCoordinates = CITY_COORDINATES[city];
     }
 
-    if (profile) {
-      // Update existing
-      if (sport) profile.sport = sport;
-      if (secondarySports) profile.secondarySports = secondarySports;
-      if (skillLevel) profile.skillLevel = skillLevel;
-      if (city) profile.city = city;
-      if (rating !== undefined) profile.rating = rating;
-      if (bio !== undefined) profile.bio = bio;
-      if (phone !== undefined) profile.phone = phone;
-      if (preferredPlayTime) profile.preferredPlayTime = preferredPlayTime;
-      if (profilePhoto) profile.profilePhoto = profilePhoto;
-      if (badges) profile.badges = badges;
-
-      profile.location = {
-        type: "Point",
-        coordinates: resolvedCoordinates,
-      };
-
-      await profile.save();
+    if (userRole === "ground_owner") {
+      profile = await GroundOwnerProfile.findOne({ userId: req.user._id });
+      if (profile) {
+        if (businessName || name) profile.businessName = (businessName || name).trim();
+        if (contactPhone || phone) profile.contactPhone = (contactPhone || phone).trim();
+        if (city) profile.city = city;
+        await profile.save();
+      } else {
+        profile = await GroundOwnerProfile.create({
+          userId: req.user._id,
+          businessName: (businessName || name || `${req.user.name}'s Sports Venue`).trim(),
+          contactPhone: (contactPhone || phone || "+91 98765 43210").trim(),
+          city: city || req.user.city || "Chennai",
+        });
+      }
+    } else if (userRole === "coach") {
+      profile = await CoachProfile.findOne({ userId: req.user._id });
+      if (profile) {
+        if (sport) profile.sport = sport;
+        if (yearsOfExperience !== undefined) profile.yearsOfExperience = Number(yearsOfExperience);
+        if (city) profile.city = city;
+        if (phone) profile.phone = phone;
+        if (bio !== undefined) profile.bio = bio;
+        if (certifications) profile.certifications = Array.isArray(certifications) ? certifications : [certifications];
+        await profile.save();
+      } else {
+        profile = await CoachProfile.create({
+          userId: req.user._id,
+          sport: sport || "Cricket",
+          yearsOfExperience: Number(yearsOfExperience) || 0,
+          city: city || req.user.city || "Chennai",
+          phone: phone || "",
+          bio: bio || "",
+          certifications: certifications ? (Array.isArray(certifications) ? certifications : [certifications]) : [],
+        });
+      }
     } else {
-      // Create new profile
-      profile = new PlayerProfile({
-        userId: req.user._id,
-        sport: sport || "Cricket",
-        secondarySports: secondarySports || [],
-        skillLevel: skillLevel || "intermediate",
-        rating: rating !== undefined ? rating : 3.5,
-        city: city || req.user.city || "Chennai",
-        location: {
+      profile = await PlayerProfile.findOne({ userId: req.user._id });
+      if (profile) {
+        // Update existing
+        if (sport) profile.sport = sport;
+        if (secondarySports) profile.secondarySports = secondarySports;
+        if (skillLevel) profile.skillLevel = skillLevel;
+        if (city) profile.city = city;
+        if (rating !== undefined) profile.rating = rating;
+        if (bio !== undefined) profile.bio = bio;
+        if (phone !== undefined) profile.phone = phone;
+        if (preferredPlayTime) profile.preferredPlayTime = preferredPlayTime;
+        if (profilePhoto !== undefined) profile.profilePhoto = profilePhoto;
+        if (badges) profile.badges = badges;
+
+        profile.location = {
           type: "Point",
           coordinates: resolvedCoordinates,
-        },
-        profilePhoto: profilePhoto || "",
-        bio: bio || "",
-        phone: phone || "",
-        preferredPlayTime: preferredPlayTime || "Evenings (5 PM - 8 PM)",
-        badges: badges || ["Verified Athlete", "Early Adopter"],
-      });
+        };
 
-      await profile.save();
+        await profile.save();
+      } else {
+        // Create new profile
+        profile = new PlayerProfile({
+          userId: req.user._id,
+          sport: sport || "Cricket",
+          secondarySports: secondarySports || [],
+          skillLevel: skillLevel || "intermediate",
+          rating: rating !== undefined ? rating : 3.5,
+          city: city || req.user.city || "Chennai",
+          location: {
+            type: "Point",
+            coordinates: resolvedCoordinates,
+          },
+          profilePhoto: profilePhoto || "",
+          bio: bio || "",
+          phone: phone || "",
+          preferredPlayTime: preferredPlayTime || "Evenings (5 PM - 8 PM)",
+          badges: badges || ["Verified Athlete", "Early Adopter"],
+        });
+
+        await profile.save();
+      }
     }
 
-    // Update user profile completion status
-    await User.findByIdAndUpdate(req.user._id, {
+    // Update user profile completion status & name if provided
+    const userUpdates = {
       hasCompletedProfile: true,
-      city: profile.city,
-    });
+      city: profile.city || city || req.user.city,
+    };
+    if (name && typeof name === "string" && name.trim()) {
+      userUpdates.name = name.trim();
+    }
 
-    const populatedProfile = await PlayerProfile.findById(profile._id).populate(
-      "userId",
-      "name email city location role"
-    );
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, userUpdates, {
+      returnDocument: "after",
+    });
 
     res.json({
       success: true,
       message: "Profile updated successfully.",
-      profile: populatedProfile,
+      profile,
+      user: updatedUser,
     });
   } catch (error) {
     console.error("Save profile error:", error);
@@ -290,17 +340,65 @@ export const getPlayerCard = async (req, res) => {
     if (mongoose.Types.ObjectId.isValid(userId)) {
       profile = await PlayerProfile.findOne({
         $or: [{ userId: userId }, { _id: userId }],
-      }).populate("userId", "name email city createdAt");
+      }).populate("userId", "name email city createdAt role");
     }
 
     if (!profile) {
       profile = await PlayerProfile.findOne({
         playerIdNumber: new RegExp(`^${userId.trim()}$`, "i"),
-      }).populate("userId", "name email city createdAt");
+      }).populate("userId", "name email city createdAt role");
+    }
+
+    if (!profile && mongoose.Types.ObjectId.isValid(userId)) {
+      // Check if Coach
+      const coach = await CoachProfile.findOne({ userId }).populate("userId", "name email city createdAt role");
+      if (coach) {
+        return res.json({
+          success: true,
+          card: {
+            playerIdNumber: "PS-COACH",
+            name: coach.userId?.name || "Coach",
+            sport: coach.sport || "Multi-Sport",
+            secondarySports: [],
+            skillLevel: `Certified Coach (${coach.yearsOfExperience || 0} yrs exp)`,
+            rating: 5.0,
+            city: coach.city || coach.userId?.city || "Chennai",
+            profilePhoto: "",
+            joinedDate: coach.createdAt,
+            badges: ["Certified Coach", "Official Trainer"],
+            matchesPlayed: 0,
+            matchesWon: 0,
+            qrData: `PLAYSPHERE-COACH:${coach.userId?._id}`,
+          },
+        });
+      }
+
+      // Check if Ground Owner
+      const groundOwner = await GroundOwnerProfile.findOne({ userId }).populate("userId", "name email city createdAt role");
+      if (groundOwner) {
+        return res.json({
+          success: true,
+          card: {
+            playerIdNumber: "PS-VENUE-OWNER",
+            name: groundOwner.businessName || groundOwner.userId?.name || "Ground Owner",
+            sport: "Facility Management",
+            secondarySports: [],
+            skillLevel: "Verified Venue Partner",
+            rating: 5.0,
+            city: groundOwner.city || groundOwner.userId?.city || "Chennai",
+            profilePhoto: "",
+            joinedDate: groundOwner.createdAt,
+            badges: ["Verified Turf Owner", "Venue Partner"],
+            matchesPlayed: 0,
+            matchesWon: 0,
+            qrData: `PLAYSPHERE-VENUE-OWNER:${groundOwner.userId?._id}`,
+          },
+        });
+      }
     }
 
     if (!profile) {
-      return res.status(404).json({ message: "Player profile not found." });
+      return res.status(404).json({ message: "Profile not found." });
     }
 
     res.json({
@@ -345,6 +443,54 @@ export const getPublicProfile = async (req, res) => {
       profile = await PlayerProfile.findOne({
         playerIdNumber: new RegExp(`^${userId.trim()}$`, "i"),
       }).populate("userId", "name city role createdAt");
+    }
+
+    if (!profile && mongoose.Types.ObjectId.isValid(userId)) {
+      const coach = await CoachProfile.findOne({ userId }).populate("userId", "name city role createdAt");
+      if (coach) {
+        return res.json({
+          success: true,
+          profile: {
+            userId: coach.userId?._id,
+            name: coach.userId?.name,
+            city: coach.city || coach.userId?.city,
+            sport: coach.sport,
+            secondarySports: [],
+            skillLevel: `Certified Coach (${coach.yearsOfExperience || 0} yrs exp)`,
+            rating: 5.0,
+            profilePhoto: "",
+            playerIdNumber: "PS-COACH",
+            bio: coach.bio || "Certified Sports Trainer and Team Coach.",
+            badges: ["Certified Coach", "Official Trainer"],
+            preferredPlayTime: "Flexible Match Hours",
+            matchesPlayed: 0,
+            matchesWon: 0,
+          },
+        });
+      }
+
+      const groundOwner = await GroundOwnerProfile.findOne({ userId }).populate("userId", "name city role createdAt");
+      if (groundOwner) {
+        return res.json({
+          success: true,
+          profile: {
+            userId: groundOwner.userId?._id,
+            name: groundOwner.businessName || groundOwner.userId?.name,
+            city: groundOwner.city || groundOwner.userId?.city,
+            sport: "Facility Management",
+            secondarySports: [],
+            skillLevel: "Verified Venue Partner",
+            rating: 5.0,
+            profilePhoto: "",
+            playerIdNumber: "PS-VENUE-OWNER",
+            bio: "Registered PlaySphere sports arena and turf facility owner.",
+            badges: ["Verified Turf Owner", "Venue Partner"],
+            preferredPlayTime: "All Day Booking Available",
+            matchesPlayed: 0,
+            matchesWon: 0,
+          },
+        });
+      }
     }
 
     if (!profile) {

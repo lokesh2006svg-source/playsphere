@@ -12,6 +12,20 @@ export const getCityCoordinates = (cityName) => {
   return matchKey ? CITY_COORDINATES[matchKey] : null;
 };
 
+// Helper to check if a filter value means 'All'
+const isAllFilter = (val) => {
+  if (!val) return true;
+  const s = String(val).trim().toLowerCase();
+  return (
+    s === "all" ||
+    s === "all sports" ||
+    s === "all districts" ||
+    s === "all tamil nadu" ||
+    s === "all skill levels" ||
+    s.startsWith("all ")
+  );
+};
+
 // @desc    Search for nearby/all players with geospatial proximity and city filters
 // @route   GET /api/players AND GET /api/players/nearby
 // @access  Public / Private (supports optional auth)
@@ -26,35 +40,29 @@ export const getNearbyPlayers = async (req, res) => {
       city,
       search,
       excludeSelf,
-      limit = 50,
+      limit = 100,
       page = 1,
     } = req.query;
 
-    const maxDistanceMeters = parseFloat(maxDistanceKm) * 1000;
+    const maxDistanceMeters = (parseFloat(maxDistanceKm) || 50) * 1000;
     const currentUserId = req.user ? req.user._id : null;
     const shouldExcludeSelf = excludeSelf === "true" || excludeSelf === true;
 
     let players = [];
     let usedCityFallback = false;
 
-    // Resolve lat/lng from city if not provided directly
-    if ((lat === undefined || lng === undefined || lat === null || lng === null) && city) {
-      const cityCoords = getCityCoordinates(city);
-      if (cityCoords) {
-        lng = cityCoords[0];
-        lat = cityCoords[1];
-      }
-    }
-
-    const hasValidCoords =
+    // Check if client explicitly sent GPS coordinates (e.g. from "Use Current Location")
+    const hasExplicitGps =
       lat !== undefined &&
       lng !== undefined &&
       lat !== null &&
       lng !== null &&
+      lat !== "" &&
+      lng !== "" &&
       !isNaN(parseFloat(lat)) &&
       !isNaN(parseFloat(lng));
 
-    if (hasValidCoords) {
+    if (hasExplicitGps) {
       const latitude = parseFloat(lat);
       const longitude = parseFloat(lng);
 
@@ -76,15 +84,19 @@ export const getNearbyPlayers = async (req, res) => {
         matchStage.userId = { $ne: new mongoose.Types.ObjectId(currentUserId) };
       }
 
-      if (sport && sport !== "All" && sport !== "All Sports" && sport !== "all") {
+      if (!isAllFilter(sport)) {
         matchStage.$or = [
-          { sport: new RegExp(`^${sport}$`, "i") },
-          { secondarySports: new RegExp(`^${sport}$`, "i") },
+          { sport: new RegExp(`^${sport.trim()}$`, "i") },
+          { secondarySports: new RegExp(`^${sport.trim()}$`, "i") },
         ];
       }
 
-      if (skillLevel && skillLevel !== "All" && skillLevel !== "all") {
-        matchStage.skillLevel = skillLevel.toLowerCase();
+      if (!isAllFilter(city)) {
+        matchStage.city = new RegExp(city.trim(), "i");
+      }
+
+      if (!isAllFilter(skillLevel)) {
+        matchStage.skillLevel = skillLevel.toLowerCase().trim();
       }
 
       const pipeline = [
@@ -142,17 +154,17 @@ export const getNearbyPlayers = async (req, res) => {
           },
         },
         { $sort: { distanceKm: 1, rating: -1, createdAt: -1 } },
-        { $limit: parseInt(limit, 10) || 50 }
+        { $limit: parseInt(limit, 10) || 100 }
       );
 
       try {
         players = await PlayerProfile.aggregate(pipeline);
       } catch (geoErr) {
-        console.warn("Aggregate geoNear error, falling back to standard query:", geoErr.message);
+        console.warn("[PlayerDirectory] Aggregate geoNear error, falling back to standard query:", geoErr.message);
       }
     }
 
-    // Standard Query Fallback if no geo coordinates provided OR geoNear returned 0
+    // Standard Direct MongoDB Query (when browsing by district/all, or if GPS yielded 0 results)
     if (players.length === 0) {
       usedCityFallback = true;
       const query = {};
@@ -161,23 +173,23 @@ export const getNearbyPlayers = async (req, res) => {
         query.userId = { $ne: currentUserId };
       }
 
-      if (city && city !== "All" && city !== "all") {
+      if (!isAllFilter(city)) {
         query.city = new RegExp(city.trim(), "i");
       }
 
-      if (sport && sport !== "All" && sport !== "All Sports" && sport !== "all") {
+      if (!isAllFilter(sport)) {
         query.$or = [
           { sport: new RegExp(sport.trim(), "i") },
           { secondarySports: new RegExp(sport.trim(), "i") },
         ];
       }
 
-      if (skillLevel && skillLevel !== "All" && skillLevel !== "all") {
-        query.skillLevel = skillLevel.toLowerCase();
+      if (!isAllFilter(skillLevel)) {
+        query.skillLevel = skillLevel.toLowerCase().trim();
       }
 
       const rawProfiles = await PlayerProfile.find(query)
-        .populate("userId", "name email city location role")
+        .populate("userId", "name email city location role profilePhoto")
         .sort({ rating: -1, matchesWon: -1, createdAt: -1 })
         .limit(parseInt(limit, 10) || 100);
 
@@ -188,18 +200,18 @@ export const getNearbyPlayers = async (req, res) => {
           userId: p.userId._id,
           name: p.userId.name,
           email: p.userId.email,
-          city: p.city,
+          city: p.city || p.userId.city || "Tamil Nadu",
           sport: p.sport,
-          secondarySports: p.secondarySports,
+          secondarySports: p.secondarySports || [],
           skillLevel: p.skillLevel,
           rating: p.rating,
-          profilePhoto: p.profilePhoto,
+          profilePhoto: p.profilePhoto || p.userId.profilePhoto || "",
           playerIdNumber: p.playerIdNumber,
-          badges: p.badges,
-          bio: p.bio,
-          preferredPlayTime: p.preferredPlayTime,
-          matchesPlayed: p.matchesPlayed,
-          matchesWon: p.matchesWon,
+          badges: p.badges || [],
+          bio: p.bio || "",
+          preferredPlayTime: p.preferredPlayTime || "Evenings",
+          matchesPlayed: p.matchesPlayed || 0,
+          matchesWon: p.matchesWon || 0,
           createdAt: p.createdAt,
           distanceKm: null,
         }));
@@ -225,9 +237,9 @@ export const getNearbyPlayers = async (req, res) => {
       count: players.length,
       usedCityFallback,
       searchCenter: {
-        lat: hasValidCoords ? parseFloat(lat) : null,
-        lng: hasValidCoords ? parseFloat(lng) : null,
-        city: city || (req.user ? req.user.city : "All"),
+        lat: hasExplicitGps ? parseFloat(lat) : null,
+        lng: hasExplicitGps ? parseFloat(lng) : null,
+        city: isAllFilter(city) ? "All" : city,
       },
       players,
     });

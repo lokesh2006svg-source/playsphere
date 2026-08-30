@@ -18,7 +18,7 @@ export const getDbStatus = () => ({
 });
 
 export const connectDB = async () => {
-  if (dbState.isConnected) return;
+  if (dbState.isConnected && mongoose.connection.readyState === 1) return;
 
   const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/playsphere";
 
@@ -56,5 +56,10 @@ export const connectDB = async () => {
     }
   }
 };
+
+mongoose.connection.on("disconnected", () => {
+  dbState.isConnected = false;
+  console.log("[MongoDB] Connection disconnected.");
+});
 
 export default connectDB;
