@@ -17,6 +17,8 @@ import {
   Mail,
   AlertCircle,
   Send,
+  Share2,
+  Copy,
 } from "lucide-react";
 
 const TeamDetail = () => {
@@ -35,6 +37,18 @@ const TeamDetail = () => {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteFeedback, setInviteFeedback] = useState(null);
   const [error, setError] = useState("");
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const handleCopySquadLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2500);
+  };
+
+  const getWhatsAppSquadUrl = () => {
+    const text = `📋 Join our official sports squad "${team?.name || "Team"}" for ${team?.sport || "sports"} in ${team?.city || "Tamil Nadu"} on PlaySphere! Check our roster & try out:`;
+    return `https://api.whatsapp.com/send?text=${encodeURIComponent(`${text}\n\n🔗 ${window.location.href}`)}`;
+  };
 
   const loadTeam = async () => {
     try {
@@ -164,14 +178,37 @@ const TeamDetail = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-[#F5F0E6]">
-      {/* Back Link */}
-      <Link
-        to="/teams"
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#9B9691] hover:text-[#F5F0E6] transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4 text-gold" />
-        <span>Back to Teams</span>
-      </Link>
+      {/* Top Header & Share Actions */}
+      <div className="flex items-center justify-between">
+        <Link
+          to="/teams"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#9B9691] hover:text-[#F5F0E6] transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 text-gold" />
+          <span>Back to Teams</span>
+        </Link>
+
+        <div className="flex items-center gap-2">
+          <a
+            href={getWhatsAppSquadUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Recruit on</span> WhatsApp
+          </a>
+
+          <button
+            type="button"
+            onClick={handleCopySquadLink}
+            className="px-3 py-1.5 bg-court-850 hover:bg-court-800 border border-court-700 text-[#F5F0E6] text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors"
+          >
+            {shareCopied ? <CheckCircle className="w-3.5 h-3.5 text-gold" /> : <Share2 className="w-3.5 h-3.5 text-gold" />}
+            <span>{shareCopied ? "Link Copied!" : "Share Squad"}</span>
+          </button>
+        </div>
+      </div>
 
       {/* Hero Banner */}
       <div className="bg-court-900 border border-court-700 rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-gold/5">
@@ -201,15 +238,17 @@ const TeamDetail = () => {
           </div>
         </div>
 
-        {isCaptain && (
-          <button
-            onClick={() => setInviteModalOpen(true)}
-            className="px-5 py-2.5 bg-gradient-to-r from-gold via-amber-400 to-gold-hover hover:from-gold-hover hover:to-amber-500 text-court-950 font-black rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-gold/20 transition-all self-start sm:self-auto"
-          >
-            <UserPlus className="w-4 h-4" />
-            <span>Invite Player</span>
-          </button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {isCaptain && (
+            <button
+              onClick={() => setInviteModalOpen(true)}
+              className="px-5 py-2.5 bg-gradient-to-r from-gold via-amber-400 to-gold-hover hover:from-gold-hover hover:to-amber-500 text-court-950 font-black rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-gold/20 transition-all"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Invite Player</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* KPI Stats */}

@@ -49,9 +49,12 @@ const Profile = () => {
     skillLevel: profile?.skillLevel || "intermediate",
     city: profile?.city || user?.city || "Chennai",
     bio: profile?.bio || "",
-    phone: profile?.phone || "",
+    phone: profile?.phone || profile?.contactPhone || "",
     preferredPlayTime: profile?.preferredPlayTime || "Evenings (5 PM - 8 PM)",
     profilePhoto: profile?.profilePhoto || "",
+    businessName: profile?.businessName || user?.name || "",
+    contactPhone: profile?.contactPhone || profile?.phone || "",
+    yearsOfExperience: profile?.yearsOfExperience || 3,
   });
 
   useEffect(() => {
@@ -61,9 +64,12 @@ const Profile = () => {
       skillLevel: profile?.skillLevel || "intermediate",
       city: profile?.city || user?.city || "Chennai",
       bio: profile?.bio || "",
-      phone: profile?.phone || "",
+      phone: profile?.phone || profile?.contactPhone || "",
       preferredPlayTime: profile?.preferredPlayTime || "Evenings (5 PM - 8 PM)",
       profilePhoto: profile?.profilePhoto || "",
+      businessName: profile?.businessName || user?.name || "",
+      contactPhone: profile?.contactPhone || profile?.phone || "",
+      yearsOfExperience: profile?.yearsOfExperience || 3,
     });
   }, [profile, user]);
 

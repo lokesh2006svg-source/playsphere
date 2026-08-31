@@ -24,6 +24,10 @@ import {
   ShieldCheck,
   HelpCircle,
   Info,
+  Medal,
+  Briefcase,
+  Share2,
+  CheckCircle,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -412,7 +416,167 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Main Navigation Feature Grid (Player-Focused) */}
+      {/* 3-Role Unified Public Portals Showcase */}
+      <div className="bg-gradient-to-r from-court-950 via-court-900 to-court-950 border border-court-750 rounded-3xl p-6 sm:p-8 shadow-xl shadow-gold/5 relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-court-750">
+          <div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-gold" />
+              <h2 className="text-xl font-black text-[#F5F0E6]">Unified Sports Ecosystem for Tamil Nadu</h2>
+            </div>
+            <p className="text-xs text-[#9B9691] mt-1">
+              Purpose-built digital experiences for Athletes, Certified Coaches, and Turf Facility Owners
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-[#9B9691] hidden sm:inline">Share Platform:</span>
+            <Link
+              to="/signup"
+              className="px-4 py-2 bg-gold hover:bg-gold-hover text-court-950 font-black rounded-xl text-xs flex items-center gap-1.5 transition-colors shadow-md shadow-gold/15"
+            >
+              <span>Get Started Free</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Portal 1: Athletes & Players */}
+          <div className="p-5 bg-court-950/80 border border-gold/30 hover:border-gold rounded-2xl flex flex-col justify-between group transition-all">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/40 flex items-center justify-center text-gold shadow-sm">
+                  <Medal className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-black text-gold uppercase px-2 py-0.5 bg-gold/10 rounded-full border border-gold/30">
+                  For Athletes
+                </span>
+              </div>
+              <h3 className="text-base font-black text-[#F5F0E6] group-hover:text-gold transition-colors">
+                Player Experience
+              </h3>
+              <ul className="mt-2 space-y-1.5 text-xs text-[#9B9691]">
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-gold shrink-0" />
+                  <span>Verified Digital Sports Pass (`PS-2026-XXXX`)</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-gold shrink-0" />
+                  <span>GPS Proximity Player Discovery (1-50 km)</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-gold shrink-0" />
+                  <span>Real-time Court & Turf Slot Reservations</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-gold shrink-0" />
+                  <span>Knockout Tournaments & Visual Brackets</span>
+                </li>
+              </ul>
+            </div>
+            <div className="mt-4 pt-3 border-t border-court-800 flex items-center justify-between">
+              <Link
+                to="/players"
+                className="text-xs font-bold text-gold hover:underline flex items-center gap-1"
+              >
+                <span>Find Nearby Players</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Portal 2: Coaches & Team Managers */}
+          <div className="p-5 bg-court-950/80 border border-blue-500/30 hover:border-blue-500 rounded-2xl flex flex-col justify-between group transition-all">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/40 flex items-center justify-center text-blue-400 shadow-sm">
+                  <Briefcase className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-black text-blue-300 uppercase px-2 py-0.5 bg-blue-500/10 rounded-full border border-blue-500/30">
+                  For Coaches
+                </span>
+              </div>
+              <h3 className="text-base font-black text-[#F5F0E6] group-hover:text-blue-300 transition-colors">
+                Coach Portal
+              </h3>
+              <ul className="mt-2 space-y-1.5 text-xs text-[#9B9691]">
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <span>Official Squad & Team Roster Management</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <span>Recruit Players across 38 TN Districts</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <span>Register Squads for State Championships</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <span>Reserve Practice Grounds & Turfs</span>
+                </li>
+              </ul>
+            </div>
+            <div className="mt-4 pt-3 border-t border-court-800 flex items-center justify-between">
+              <Link
+                to="/teams"
+                className="text-xs font-bold text-blue-400 hover:underline flex items-center gap-1"
+              >
+                <span>Manage Squads</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Portal 3: Ground & Turf Owners */}
+          <div className="p-5 bg-court-950/80 border border-emerald-500/30 hover:border-emerald-500 rounded-2xl flex flex-col justify-between group transition-all">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-sm">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-black text-emerald-300 uppercase px-2 py-0.5 bg-emerald-500/10 rounded-full border border-emerald-500/30">
+                  For Ground Owners
+                </span>
+              </div>
+              <h3 className="text-base font-black text-[#F5F0E6] group-hover:text-emerald-300 transition-colors">
+                Turf Facility Portal
+              </h3>
+              <ul className="mt-2 space-y-1.5 text-xs text-[#9B9691]">
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>List Synthetic Turfs, Courts & Grounds</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Automated 1-Hour Slot Engine & Conflict Lock</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Integrated UPI QR Payment Flow</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Real-time Reservation & Revenue Tracking</span>
+                </li>
+              </ul>
+            </div>
+            <div className="mt-4 pt-3 border-t border-court-800 flex items-center justify-between">
+              <Link
+                to="/venues"
+                className="text-xs font-bold text-emerald-400 hover:underline flex items-center gap-1"
+              >
+                <span>Browse & List Grounds</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navigation Feature Grid */}
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>

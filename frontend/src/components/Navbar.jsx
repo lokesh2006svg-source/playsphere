@@ -22,7 +22,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import NotificationDropdown from "./NotificationDropdown";
-import InviteModal from "./InviteModal";
+import ShareHubModal from "./ShareHubModal";
+import RoleDemoBar from "./RoleDemoBar";
 
 const NAV_LINKS = [
   { name: "Dashboard", path: "/dashboard", icon: Trophy },
@@ -166,9 +167,19 @@ const Navbar = () => {
                             🛡️ Venue Admin
                           </span>
                         )}
-                        {!isAdmin && (
+                        {user.role === "coach" && (
+                          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 bg-blue-500/20 border border-blue-500/40 text-blue-300 text-[10px] font-black rounded-md">
+                            📋 Coach
+                          </span>
+                        )}
+                        {user.role === "ground_owner" && (
+                          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-black rounded-md">
+                            🏟️ Turf Owner
+                          </span>
+                        )}
+                        {user.role === "player" && (
                           <span className="hidden sm:inline-flex items-center px-2 py-0.5 bg-court-800 border border-gold/20 text-[#9B9691] text-[10px] font-bold rounded-md">
-                            Player
+                            Athlete
                           </span>
                         )}
                       </div>
@@ -192,9 +203,19 @@ const Navbar = () => {
                                 Super Admin
                               </span>
                             )}
-                            {isVenueAdminOnly && (
-                              <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-black rounded-md">
-                                Venue Admin
+                            {user.role === "coach" && (
+                              <span className="px-2 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[9px] font-black rounded-md">
+                                Certified Coach
+                              </span>
+                            )}
+                            {user.role === "ground_owner" && (
+                              <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-black rounded-md">
+                                Ground Owner
+                              </span>
+                            )}
+                            {user.role === "player" && (
+                              <span className="px-2 py-0.5 bg-gold/15 text-gold border border-gold/40 text-[9px] font-bold rounded-md">
+                                Verified Athlete
                               </span>
                             )}
                           </div>
@@ -340,14 +361,27 @@ const Navbar = () => {
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gold hover:bg-court-900"
             >
               <Share2 className="w-4 h-4" />
-              <span>Invite Players</span>
+              <span>Share & Invite Hub</span>
             </button>
           </div>
         )}
       </header>
 
-      {/* Shareable Referral Modal */}
-      <InviteModal isOpen={inviteModalOpen} onClose={() => setInviteModalOpen(false)} />
+      {/* 1-Click Role Switcher & Public Demo Bar */}
+      <RoleDemoBar onOpenShareModal={() => setInviteModalOpen(true)} />
+
+      {/* Unified Public Sports Share Hub Modal */}
+      <ShareHubModal
+        isOpen={inviteModalOpen}
+        onClose={() => setInviteModalOpen(false)}
+        defaultTab={
+          user?.role === "coach"
+            ? "coach"
+            : user?.role === "ground_owner"
+            ? "owner"
+            : "player"
+        }
+      />
     </>
   );
 };

@@ -22,6 +22,9 @@ import {
   Award,
   Layers,
   X,
+  Share2,
+  Send,
+  Copy,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -43,6 +46,18 @@ const TournamentDetail = () => {
 
   // Bracket Generation
   const [bracketLoading, setBracketLoading] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const handleCopyTournamentLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2500);
+  };
+
+  const getWhatsAppTournamentUrl = () => {
+    const text = `🏆 Track knockout match fixtures & tournament bracket for "${tournament?.name || "Championship"}" in ${tournament?.city || "Tamil Nadu"} on PlaySphere:`;
+    return `https://api.whatsapp.com/send?text=${encodeURIComponent(`${text}\n\n🔗 ${window.location.href}`)}`;
+  };
 
   const loadData = async () => {
     try {
@@ -163,14 +178,37 @@ const TournamentDetail = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-[#F5F0E6]">
-      {/* Back link */}
-      <Link
-        to="/tournaments"
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#9B9691] hover:text-[#F5F0E6] transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4 text-gold" />
-        <span>Back to Tournaments</span>
-      </Link>
+      {/* Top Header & Share Actions */}
+      <div className="flex items-center justify-between">
+        <Link
+          to="/tournaments"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#9B9691] hover:text-[#F5F0E6] transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 text-gold" />
+          <span>Back to Tournaments</span>
+        </Link>
+
+        <div className="flex items-center gap-2">
+          <a
+            href={getWhatsAppTournamentUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Share Bracket on</span> WhatsApp
+          </a>
+
+          <button
+            type="button"
+            onClick={handleCopyTournamentLink}
+            className="px-3 py-1.5 bg-court-850 hover:bg-court-800 border border-court-700 text-[#F5F0E6] text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors"
+          >
+            {shareCopied ? <CheckCircle2 className="w-3.5 h-3.5 text-gold" /> : <Share2 className="w-3.5 h-3.5 text-gold" />}
+            <span>{shareCopied ? "Link Copied!" : "Share Bracket"}</span>
+          </button>
+        </div>
+      </div>
 
       {/* Banner Card */}
       <div className="bg-court-900 border border-court-700 rounded-3xl overflow-hidden shadow-xl shadow-gold/5">

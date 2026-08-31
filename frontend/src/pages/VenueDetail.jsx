@@ -18,6 +18,9 @@ import {
   QrCode,
   CheckCircle2,
   ChevronRight,
+  Share2,
+  Send,
+  Copy,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -32,10 +35,21 @@ const VenueDetail = () => {
   const [slots, setSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
-  const [bookingLoading, setBookingLoading] = useState(false);
   const [pendingBooking, setPendingBooking] = useState(null);
   const [bookingSuccess, setBookingSuccess] = useState(null);
   const [error, setError] = useState("");
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2500);
+  };
+
+  const getWhatsAppVenueUrl = () => {
+    const text = `🏟️ Book turf slots at ${venue?.name || "this venue"} on PlaySphere! Real-time slot availability & pricing:`;
+    return `https://api.whatsapp.com/send?text=${encodeURIComponent(`${text}\n\n🔗 ${window.location.href}`)}`;
+  };
 
   // Load Venue Details
   useEffect(() => {
@@ -141,14 +155,37 @@ const VenueDetail = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-[#F5F0E6]">
-      {/* Back button */}
-      <Link
-        to="/venues"
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#9B9691] hover:text-[#F5F0E6] transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4 text-gold" />
-        <span>Back to Venues</span>
-      </Link>
+      {/* Top Header & Share Actions */}
+      <div className="flex items-center justify-between">
+        <Link
+          to="/venues"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#9B9691] hover:text-[#F5F0E6] transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 text-gold" />
+          <span>Back to Venues</span>
+        </Link>
+
+        <div className="flex items-center gap-2">
+          <a
+            href={getWhatsAppVenueUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Share Turf on</span> WhatsApp
+          </a>
+
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            className="px-3 py-1.5 bg-court-850 hover:bg-court-800 border border-court-700 text-[#F5F0E6] text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors"
+          >
+            {shareCopied ? <CheckCircle2 className="w-3.5 h-3.5 text-gold" /> : <Share2 className="w-3.5 h-3.5 text-gold" />}
+            <span>{shareCopied ? "Link Copied!" : "Share Turf"}</span>
+          </button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left 2 Cols: Details, Gallery, Amenities, Location */}

@@ -4,6 +4,8 @@ import mongoose from "mongoose";
 import PlayerProfile from "../models/PlayerProfile.js";
 import CoachProfile from "../models/CoachProfile.js";
 import GroundOwnerProfile from "../models/GroundOwnerProfile.js";
+import Team from "../models/Team.js";
+import Venue from "../models/Venue.js";
 import User from "../models/User.js";
 import { TN_DISTRICT_COORDINATES } from "../constants/tnDistricts.js";
 
@@ -352,8 +354,10 @@ export const getPlayerCard = async (req, res) => {
   try {
     const { userId } = req.params;
     let profile = null;
+    let targetUser = null;
 
     if (mongoose.Types.ObjectId.isValid(userId)) {
+      targetUser = await User.findById(userId);
       profile = await PlayerProfile.findOne({
         $or: [{ userId: userId }, { _id: userId }],
       }).populate("userId", "name email city createdAt role");
@@ -365,49 +369,52 @@ export const getPlayerCard = async (req, res) => {
       }).populate("userId", "name email city createdAt role");
     }
 
-    if (!profile && mongoose.Types.ObjectId.isValid(userId)) {
+    if (!profile && (targetUser || mongoose.Types.ObjectId.isValid(userId))) {
+      const uId = targetUser ? targetUser._id : userId;
       // Check if Coach
-      const coach = await CoachProfile.findOne({ userId }).populate("userId", "name email city createdAt role");
-      if (coach) {
+      const coach = await CoachProfile.findOne({ userId: uId }).populate("userId", "name email city createdAt role");
+      if (coach || targetUser?.role === "coach") {
         return res.json({
           success: true,
+          role: "coach",
           card: {
             playerIdNumber: "PS-COACH",
-            name: coach.userId?.name || "Coach",
-            sport: coach.sport || "Multi-Sport",
+            name: coach?.userId?.name || targetUser?.name || "Coach",
+            sport: coach?.sport || "Multi-Sport",
             secondarySports: [],
-            skillLevel: `Certified Coach (${coach.yearsOfExperience || 0} yrs exp)`,
+            skillLevel: `Certified Coach (${coach?.yearsOfExperience || 0} yrs exp)`,
             rating: 5.0,
-            city: coach.city || coach.userId?.city || "Chennai",
+            city: coach?.city || targetUser?.city || "Chennai",
             profilePhoto: "",
-            joinedDate: coach.createdAt,
-            badges: ["Certified Coach", "Official Trainer"],
+            joinedDate: coach?.createdAt || targetUser?.createdAt || Date.now(),
+            badges: coach?.certifications?.length > 0 ? coach.certifications : ["Certified Coach", "Official Trainer"],
             matchesPlayed: 0,
             matchesWon: 0,
-            qrData: `PLAYSPHERE-COACH:${coach.userId?._id}`,
+            qrData: `PLAYSPHERE-COACH:${uId}`,
           },
         });
       }
 
       // Check if Ground Owner
-      const groundOwner = await GroundOwnerProfile.findOne({ userId }).populate("userId", "name email city createdAt role");
-      if (groundOwner) {
+      const groundOwner = await GroundOwnerProfile.findOne({ userId: uId }).populate("userId", "name email city createdAt role");
+      if (groundOwner || targetUser?.role === "ground_owner") {
         return res.json({
           success: true,
+          role: "ground_owner",
           card: {
             playerIdNumber: "PS-VENUE-OWNER",
-            name: groundOwner.businessName || groundOwner.userId?.name || "Ground Owner",
+            name: groundOwner?.businessName || targetUser?.name || "Ground Owner",
             sport: "Facility Management",
             secondarySports: [],
             skillLevel: "Verified Venue Partner",
             rating: 5.0,
-            city: groundOwner.city || groundOwner.userId?.city || "Chennai",
+            city: groundOwner?.city || targetUser?.city || "Chennai",
             profilePhoto: "",
-            joinedDate: groundOwner.createdAt,
+            joinedDate: groundOwner?.createdAt || targetUser?.createdAt || Date.now(),
             badges: ["Verified Turf Owner", "Venue Partner"],
             matchesPlayed: 0,
             matchesWon: 0,
-            qrData: `PLAYSPHERE-VENUE-OWNER:${groundOwner.userId?._id}`,
+            qrData: `PLAYSPHERE-VENUE-OWNER:${uId}`,
           },
         });
       }
@@ -419,6 +426,7 @@ export const getPlayerCard = async (req, res) => {
 
     res.json({
       success: true,
+      role: "player",
       card: {
         playerIdNumber: profile.playerIdNumber,
         name: profile.userId?.name || "Player",
@@ -447,92 +455,144 @@ export const getPlayerCard = async (req, res) => {
 export const getPublicProfile = async (req, res) => {
   try {
     const { userId } = req.params;
-    let profile = null;
+    let targetUser = null;
+    let targetId = null;
 
     if (mongoose.Types.ObjectId.isValid(userId)) {
-      profile = await PlayerProfile.findOne({
-        $or: [{ userId: userId }, { _id: userId }],
-      }).populate("userId", "name city role createdAt");
+      targetId = userId;
+      targetUser = await User.findById(userId).select("name city role createdAt");
     }
 
-    if (!profile) {
-      profile = await PlayerProfile.findOne({
+    // 1. Check Player Profile by Player ID Number or User/Doc ID
+    let playerProfile = null;
+    if (targetId) {
+      playerProfile = await PlayerProfile.findOne({
+        $or: [{ userId: targetId }, { _id: targetId }],
+      }).populate("userId", "name city role createdAt");
+    }
+    if (!playerProfile) {
+      playerProfile = await PlayerProfile.findOne({
         playerIdNumber: new RegExp(`^${userId.trim()}$`, "i"),
       }).populate("userId", "name city role createdAt");
     }
 
-    if (!profile && mongoose.Types.ObjectId.isValid(userId)) {
-      const coach = await CoachProfile.findOne({ userId }).populate("userId", "name city role createdAt");
-      if (coach) {
+    if (playerProfile) {
+      return res.json({
+        success: true,
+        role: "player",
+        profile: {
+          userId: playerProfile.userId?._id,
+          name: playerProfile.userId?.name,
+          city: playerProfile.city,
+          sport: playerProfile.sport,
+          secondarySports: playerProfile.secondarySports,
+          skillLevel: playerProfile.skillLevel,
+          rating: playerProfile.rating,
+          profilePhoto: playerProfile.profilePhoto,
+          playerIdNumber: playerProfile.playerIdNumber,
+          bio: playerProfile.bio,
+          badges: playerProfile.badges,
+          preferredPlayTime: playerProfile.preferredPlayTime,
+          matchesPlayed: playerProfile.matchesPlayed,
+          matchesWon: playerProfile.matchesWon,
+          joinedDate: playerProfile.joinedDate,
+        },
+      });
+    }
+
+    // 2. Check Coach Profile
+    if (targetId || targetUser?.role === "coach") {
+      const coach = await CoachProfile.findOne({
+        $or: [{ userId: targetId }, { _id: targetId }],
+      }).populate("userId", "name city role createdAt");
+
+      if (coach || targetUser?.role === "coach") {
+        const coachUserId = coach?.userId?._id || targetId;
+        // Fetch squads managed by this coach
+        const managedTeams = await Team.find({ coachId: coachUserId })
+          .select("name sport city logo members count")
+          .limit(6);
+
         return res.json({
           success: true,
+          role: "coach",
           profile: {
-            userId: coach.userId?._id,
-            name: coach.userId?.name,
-            city: coach.city || coach.userId?.city,
-            sport: coach.sport,
-            secondarySports: [],
-            skillLevel: `Certified Coach (${coach.yearsOfExperience || 0} yrs exp)`,
-            rating: 5.0,
+            userId: coachUserId,
+            name: coach?.userId?.name || targetUser?.name || "Certified Coach",
+            city: coach?.city || targetUser?.city || "Chennai",
+            sport: coach?.sport || "Multi-Sport",
+            yearsOfExperience: coach?.yearsOfExperience || 5,
+            certifications: coach?.certifications?.length > 0 ? coach.certifications : ["BCCI Level-2", "NIS Certified Coach"],
+            skillLevel: `Certified Coach (${coach?.yearsOfExperience || 5}+ yrs exp)`,
+            rating: 4.9,
             profilePhoto: "",
             playerIdNumber: "PS-COACH",
-            bio: coach.bio || "Certified Sports Trainer and Team Coach.",
-            badges: ["Certified Coach", "Official Trainer"],
-            preferredPlayTime: "Flexible Match Hours",
-            matchesPlayed: 0,
-            matchesWon: 0,
+            bio: coach?.bio || "Certified sports coach dedicated to talent development and tactical team training in Tamil Nadu.",
+            badges: coach?.certifications?.length > 0 ? coach.certifications : ["Certified Coach", "Official Trainer", "State License"],
+            phone: coach?.phone || "",
+            managedTeams: managedTeams.map((t) => ({
+              _id: t._id,
+              name: t.name,
+              sport: t.sport,
+              city: t.city,
+              logo: t.logo,
+              memberCount: t.members?.length || 0,
+            })),
+            joinedDate: coach?.createdAt || targetUser?.createdAt,
           },
         });
       }
+    }
 
-      const groundOwner = await GroundOwnerProfile.findOne({ userId }).populate("userId", "name city role createdAt");
-      if (groundOwner) {
+    // 3. Check Ground Owner Profile
+    if (targetId || targetUser?.role === "ground_owner") {
+      const groundOwner = await GroundOwnerProfile.findOne({
+        $or: [{ userId: targetId }, { _id: targetId }],
+      }).populate("userId", "name city role createdAt");
+
+      if (groundOwner || targetUser?.role === "ground_owner") {
+        const ownerUserId = groundOwner?.userId?._id || targetId;
+        // Fetch turfs and venues managed by this owner
+        const managedVenues = await Venue.find({
+          $or: [{ ownerId: ownerUserId }, { _id: { $in: groundOwner?.managedVenueIds || [] } }],
+          isActive: true,
+        }).select("name sportType city address pricePerHour photos amenities rating reviewCount");
+
         return res.json({
           success: true,
+          role: "ground_owner",
           profile: {
-            userId: groundOwner.userId?._id,
-            name: groundOwner.businessName || groundOwner.userId?.name,
-            city: groundOwner.city || groundOwner.userId?.city,
-            sport: "Facility Management",
-            secondarySports: [],
-            skillLevel: "Verified Venue Partner",
-            rating: 5.0,
+            userId: ownerUserId,
+            name: groundOwner?.businessName || targetUser?.name || "Sports Arena & Turf",
+            ownerName: groundOwner?.userId?.name || targetUser?.name,
+            city: groundOwner?.city || targetUser?.city || "Chennai",
+            address: groundOwner?.address || `${groundOwner?.city || "Chennai"}, Tamil Nadu`,
+            sport: "Multi-Sport Arena & Turf",
+            skillLevel: "Verified Turf Partner",
+            rating: 4.9,
             profilePhoto: "",
             playerIdNumber: "PS-VENUE-OWNER",
-            bio: "Registered PlaySphere sports arena and turf facility owner.",
-            badges: ["Verified Turf Owner", "Venue Partner"],
-            preferredPlayTime: "All Day Booking Available",
-            matchesPlayed: 0,
-            matchesWon: 0,
+            bio: "Registered sports facility owner providing premium synthetic turf, floodlight grounds, and seamless real-time court bookings.",
+            badges: ["Verified Turf Partner", "Official Venue Host", "Real-Time Booking"],
+            contactPhone: groundOwner?.contactPhone || "+91 98401 23456",
+            managedVenues: managedVenues.map((v) => ({
+              _id: v._id,
+              name: v.name,
+              sportType: v.sportType,
+              city: v.city,
+              address: v.address,
+              pricePerHour: v.pricePerHour,
+              photos: v.photos || [],
+              amenities: v.amenities || [],
+              rating: v.rating || 4.8,
+            })),
+            joinedDate: groundOwner?.createdAt || targetUser?.createdAt,
           },
         });
       }
     }
 
-    if (!profile) {
-      return res.status(404).json({ message: "Player profile not found." });
-    }
-
-    res.json({
-      success: true,
-      profile: {
-        userId: profile.userId?._id,
-        name: profile.userId?.name,
-        city: profile.city,
-        sport: profile.sport,
-        secondarySports: profile.secondarySports,
-        skillLevel: profile.skillLevel,
-        rating: profile.rating,
-        profilePhoto: profile.profilePhoto,
-        playerIdNumber: profile.playerIdNumber,
-        bio: profile.bio,
-        badges: profile.badges,
-        preferredPlayTime: profile.preferredPlayTime,
-        matchesPlayed: profile.matchesPlayed,
-        matchesWon: profile.matchesWon,
-        joinedDate: profile.joinedDate,
-      },
-    });
+    return res.status(404).json({ message: "Sports profile not found or ID is invalid." });
   } catch (error) {
     console.error("Get public profile error:", error);
     res.status(500).json({ message: error.message || "Server error fetching public profile." });
