@@ -192,12 +192,10 @@ const Navbar = () => {
                         <div className="px-4 py-2.5">
                           <p className="font-bold text-[#F5F0E6] truncate">{user.name}</p>
                           <p className="text-[11px] text-[#9B9691] truncate">{user.email}</p>
-                          <div className="flex items-center gap-1.5 mt-1.5">
-                            {profile?.playerIdNumber && (
-                              <span className="inline-block font-mono text-[10px] text-gold bg-gold/10 px-2 py-0.5 rounded border border-gold/30">
-                                {profile.playerIdNumber}
-                              </span>
-                            )}
+                          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                            <span className="inline-block font-mono text-[10px] text-gold bg-gold/10 px-2 py-0.5 rounded border border-gold/30">
+                              {profile?.playerIdNumber || (user.role === "coach" ? "PS-COACH-001" : user.role === "ground_owner" ? "PS-VENUE-001" : `PS-2026-${user._id?.slice(-5).toUpperCase()}`)}
+                            </span>
                             {isSuperAdmin && (
                               <span className="px-2 py-0.5 bg-gold/20 text-gold-glow border border-gold/50 text-[9px] font-black rounded-md">
                                 Super Admin

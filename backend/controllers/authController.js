@@ -412,11 +412,34 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Please provide both email and password." });
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
-    const user = await User.findOne({ email: normalizedEmail });
+    const normalizedIdentifier = email.toLowerCase().trim();
+    let user = await User.findOne({ email: normalizedIdentifier });
+
+    // Fallback: If not found by email, try searching by PlayerProfile playerIdNumber or alias
+    if (!user) {
+      const playerProfile = await PlayerProfile.findOne({
+        playerIdNumber: { $regex: new RegExp(`^${normalizedIdentifier}$`, "i") },
+      });
+      if (playerProfile && playerProfile.userId) {
+        user = await User.findById(playerProfile.userId);
+      }
+    }
+
+    // Role alias fallback (e.g. entering "coach", "owner", "admin", "player")
+    if (!user) {
+      if (normalizedIdentifier === "coach") {
+        user = await User.findOne({ email: "coach@playsphere.com" });
+      } else if (normalizedIdentifier === "owner" || normalizedIdentifier === "ground_owner") {
+        user = await User.findOne({ email: "owner@playsphere.com" });
+      } else if (normalizedIdentifier === "admin" || normalizedIdentifier === "superadmin") {
+        user = await User.findOne({ email: "demo@playsphere.com" });
+      } else if (normalizedIdentifier === "player") {
+        user = await User.findOne({ email: "ananya@playsphere.com" }) || await User.findOne({ email: "karthik@playsphere.com" });
+      }
+    }
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid email or password." });
+      return res.status(401).json({ message: "Invalid email, login ID, or password." });
     }
 
     // Check account lockout status
