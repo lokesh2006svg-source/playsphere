@@ -255,7 +255,7 @@ const Dashboard = () => {
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-black text-[#F5F0E6] tracking-tight">
-              Vanakkam, {user ? user.name.split(" ")[0] : "Athlete"}! 👋
+              Vanakkam, {user ? user.name.split(" ")[0] : "Player"}! 👋
             </h1>
 
             <p className="text-sm text-[#9B9691] leading-relaxed">
