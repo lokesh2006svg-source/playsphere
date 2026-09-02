@@ -103,6 +103,48 @@ export const seedDatabase = async () => {
       isVerified: true,
     });
 
+    const tnbadminton = await safeUpsert(OfficialSportBody, { name: "Tamil Nadu Badminton Association", sport: "Badminton" }, {
+      sport: "Badminton",
+      level: "state",
+      name: "Tamil Nadu Badminton Association",
+      shortName: "TNBA",
+      city: "Chennai",
+      website: "https://tnbadminton.org",
+      contactEmail: "contact@tnbadminton.org",
+      affiliation: "Badminton Association of India (BAI) / SDAT",
+      foundedYear: 1967,
+      description: "Apex badminton governing body regulating state ranking tournaments and district leagues.",
+      isVerified: true,
+    });
+
+    const tnaa = await safeUpsert(OfficialSportBody, { name: "Tamil Nadu Athletic Association", sport: "Athletics" }, {
+      sport: "Athletics",
+      level: "state",
+      name: "Tamil Nadu Athletic Association",
+      shortName: "TNAA",
+      city: "Chennai",
+      website: "https://tnathletics.org",
+      contactEmail: "info@tnathletics.org",
+      affiliation: "Athletics Federation of India (AFI) / SDAT",
+      foundedYear: 1940,
+      description: "Governing track and field championships and national games selections.",
+      isVerified: true,
+    });
+
+    const tnsca = await safeUpsert(OfficialSportBody, { name: "Tamil Nadu State Chess Association", sport: "Chess" }, {
+      sport: "Chess",
+      level: "state",
+      name: "Tamil Nadu State Chess Association",
+      shortName: "TNSCA",
+      city: "Chennai",
+      website: "https://tamilchess.com",
+      contactEmail: "tnscaoffice@gmail.com",
+      affiliation: "All India Chess Federation (AICF) / FIDE / SDAT",
+      foundedYear: 1947,
+      description: "Home of Indian Grandmasters organizing state and international FIDE-rated tournaments.",
+      isVerified: true,
+    });
+
     // District Bodies
     const cfa = await safeUpsert(OfficialSportBody, { name: "Chennai Football Association", sport: "Football" }, {
       sport: "Football",
