@@ -19,23 +19,13 @@ import {
   ChevronDown,
   Crown,
   ShieldCheck,
+  Briefcase,
+  Clock,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import NotificationDropdown from "./NotificationDropdown";
 import ShareHubModal from "./ShareHubModal";
 import RoleDemoBar from "./RoleDemoBar";
-
-const NAV_LINKS = [
-  { name: "Dashboard", path: "/dashboard", icon: Trophy },
-  { name: "Find Players", path: "/players", icon: Users },
-  { name: "Venues", path: "/venues", icon: Calendar },
-  { name: "Teams", path: "/teams", icon: Shield },
-  { name: "Tournaments", path: "/tournaments", icon: Trophy },
-  { name: "Live Scores", path: "/live", icon: Radio, badge: "LIVE" },
-  { name: "Rules", path: "/rules", icon: BookOpen },
-  { name: "Sports Bodies", path: "/official-bodies", icon: Building2 },
-  { name: "Clubs", path: "/clubs", icon: Shield },
-];
 
 const Navbar = () => {
   const { user, profile, logout } = useAuth();
@@ -44,9 +34,52 @@ const Navbar = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
-  const isSuperAdmin = user?.role === "super_admin" || user?.role === "admin";
-  const isVenueAdminOnly = user?.role === "venue_admin";
+  const role = user?.role || "player";
+  const isSuperAdmin = role === "super_admin" || role === "admin";
+  const isVenueAdminOnly = role === "venue_admin";
   const isAdmin = isSuperAdmin || isVenueAdminOnly;
+  const isCoach = role === "coach";
+  const isGroundOwner = role === "ground_owner";
+
+  // Dynamic Navigation Links based on active user role
+  const getNavLinks = () => {
+    if (isCoach) {
+      return [
+        { name: "Dashboard", path: "/dashboard", icon: Trophy },
+        { name: "My Teams", path: "/teams", icon: Shield },
+        { name: "Tournaments", path: "/tournaments", icon: Trophy },
+        { name: "Scout Players", path: "/players", icon: Users },
+        { name: "Book Venues", path: "/venues", icon: Calendar },
+        { name: "Live Scores", path: "/live", icon: Radio, badge: "LIVE" },
+        { name: "Rules", path: "/rules", icon: BookOpen },
+        { name: "Sports Bodies", path: "/official-bodies", icon: Building2 },
+      ];
+    }
+    if (isGroundOwner) {
+      return [
+        { name: "Dashboard", path: "/dashboard", icon: Trophy },
+        { name: "My Venues", path: "/venues", icon: Building2 },
+        { name: "Slot Bookings", path: "/bookings", icon: Calendar },
+        { name: "Tournaments", path: "/tournaments", icon: Trophy },
+        { name: "Live Scores", path: "/live", icon: Radio, badge: "LIVE" },
+        { name: "Rules", path: "/rules", icon: BookOpen },
+        { name: "Sports Bodies", path: "/official-bodies", icon: Building2 },
+      ];
+    }
+    return [
+      { name: "Dashboard", path: "/dashboard", icon: Trophy },
+      { name: "Find Players", path: "/players", icon: Users },
+      { name: "Venues", path: "/venues", icon: Calendar },
+      { name: "Teams", path: "/teams", icon: Shield },
+      { name: "Tournaments", path: "/tournaments", icon: Trophy },
+      { name: "Live Scores", path: "/live", icon: Radio, badge: "LIVE" },
+      { name: "Rules", path: "/rules", icon: BookOpen },
+      { name: "Sports Bodies", path: "/official-bodies", icon: Building2 },
+      { name: "Clubs", path: "/clubs", icon: Shield },
+    ];
+  };
+
+  const navLinks = getNavLinks();
 
   const handleLogout = () => {
     logout();
@@ -73,9 +106,9 @@ const Navbar = () => {
               </div>
             </Link>
 
-            {/* Desktop Navigation Links (Strictly Player-Facing) */}
+            {/* Desktop Navigation Links (Role-Adaptive) */}
             <nav className="hidden lg:flex items-center gap-1">
-              {NAV_LINKS.map((link) => {
+              {navLinks.map((link) => {
                 const Icon = link.icon;
                 return (
                   <NavLink
@@ -167,17 +200,17 @@ const Navbar = () => {
                             🛡️ Venue Admin
                           </span>
                         )}
-                        {user.role === "coach" && (
+                        {isCoach && (
                           <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 bg-blue-500/20 border border-blue-500/40 text-blue-300 text-[10px] font-black rounded-md">
                             📋 Coach
                           </span>
                         )}
-                        {user.role === "ground_owner" && (
+                        {isGroundOwner && (
                           <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-black rounded-md">
                             🏟️ Turf Owner
                           </span>
                         )}
-                        {user.role === "player" && (
+                        {role === "player" && (
                           <span className="hidden sm:inline-flex items-center px-2 py-0.5 bg-court-800 border border-gold/20 text-[#9B9691] text-[10px] font-bold rounded-md">
                             Athlete
                           </span>
@@ -194,24 +227,24 @@ const Navbar = () => {
                           <p className="text-[11px] text-[#9B9691] truncate">{user.email}</p>
                           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                             <span className="inline-block font-mono text-[10px] text-gold bg-gold/10 px-2 py-0.5 rounded border border-gold/30">
-                              {profile?.playerIdNumber || (user.role === "coach" ? "PS-COACH-001" : user.role === "ground_owner" ? "PS-VENUE-001" : `PS-2026-${user._id?.slice(-5).toUpperCase()}`)}
+                              {profile?.playerIdNumber || (isCoach ? "PS-COACH" : isGroundOwner ? "PS-VENUE-OWNER" : `PS-2026-${user._id?.slice(-5).toUpperCase()}`)}
                             </span>
                             {isSuperAdmin && (
                               <span className="px-2 py-0.5 bg-gold/20 text-gold-glow border border-gold/50 text-[9px] font-black rounded-md">
                                 Super Admin
                               </span>
                             )}
-                            {user.role === "coach" && (
+                            {isCoach && (
                               <span className="px-2 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[9px] font-black rounded-md">
                                 Certified Coach
                               </span>
                             )}
-                            {user.role === "ground_owner" && (
+                            {isGroundOwner && (
                               <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-black rounded-md">
                                 Ground Owner
                               </span>
                             )}
-                            {user.role === "player" && (
+                            {role === "player" && (
                               <span className="px-2 py-0.5 bg-gold/15 text-gold border border-gold/40 text-[9px] font-bold rounded-md">
                                 Verified Athlete
                               </span>
@@ -236,30 +269,92 @@ const Navbar = () => {
                         )}
 
                         <div className="py-1">
-                          <Link
-                            to="/profile"
-                            onClick={() => setProfileDropdownOpen(false)}
-                            className="flex items-center gap-2.5 px-4 py-2 hover:bg-court-800 hover:text-white"
-                          >
-                            <User className="w-4 h-4 text-gold" />
-                            <span>My Sports Profile & ID Card</span>
-                          </Link>
-                          <Link
-                            to="/bookings"
-                            onClick={() => setProfileDropdownOpen(false)}
-                            className="flex items-center gap-2.5 px-4 py-2 hover:bg-court-800 hover:text-white"
-                          >
-                            <Ticket className="w-4 h-4 text-action" />
-                            <span>My Court Bookings</span>
-                          </Link>
-                          <Link
-                            to="/invites"
-                            onClick={() => setProfileDropdownOpen(false)}
-                            className="flex items-center gap-2.5 px-4 py-2 hover:bg-court-800 hover:text-white"
-                          >
-                            <Mail className="w-4 h-4 text-gold-light" />
-                            <span>Team Invites</span>
-                          </Link>
+                          {isCoach && (
+                            <>
+                              <Link
+                                to="/profile"
+                                onClick={() => setProfileDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-4 py-2 hover:bg-court-800 hover:text-white"
+                              >
+                                <Briefcase className="w-4 h-4 text-blue-400" />
+                                <span>My Coach Profile & Rosters</span>
+                              </Link>
+                              <Link
+                                to="/teams"
+                                onClick={() => setProfileDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-4 py-2 hover:bg-court-800 hover:text-white"
+                              >
+                                <Shield className="w-4 h-4 text-blue-400" />
+                                <span>My Managed Teams</span>
+                              </Link>
+                              <Link
+                                to="/tournaments"
+                                onClick={() => setProfileDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-4 py-2 hover:bg-court-800 hover:text-white"
+                              >
+                                <Trophy className="w-4 h-4 text-gold" />
+                                <span>Upcoming Tournaments</span>
+                              </Link>
+                            </>
+                          )}
+
+                          {isGroundOwner && (
+                            <>
+                              <Link
+                                to="/profile"
+                                onClick={() => setProfileDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-4 py-2 hover:bg-court-800 hover:text-white"
+                              >
+                                <Building2 className="w-4 h-4 text-emerald-400" />
+                                <span>My Turf Owner Profile</span>
+                              </Link>
+                              <Link
+                                to="/venues"
+                                onClick={() => setProfileDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-4 py-2 hover:bg-court-800 hover:text-white"
+                              >
+                                <Building2 className="w-4 h-4 text-emerald-400" />
+                                <span>My Listed Grounds</span>
+                              </Link>
+                              <Link
+                                to="/bookings"
+                                onClick={() => setProfileDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-4 py-2 hover:bg-court-800 hover:text-white"
+                              >
+                                <Clock className="w-4 h-4 text-emerald-400" />
+                                <span>Turf Slot Reservations</span>
+                              </Link>
+                            </>
+                          )}
+
+                          {isPlayer && (
+                            <>
+                              <Link
+                                to="/profile"
+                                onClick={() => setProfileDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-4 py-2 hover:bg-court-800 hover:text-white"
+                              >
+                                <User className="w-4 h-4 text-gold" />
+                                <span>My Sports Profile & ID Card</span>
+                              </Link>
+                              <Link
+                                to="/bookings"
+                                onClick={() => setProfileDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-4 py-2 hover:bg-court-800 hover:text-white"
+                              >
+                                <Ticket className="w-4 h-4 text-action" />
+                                <span>My Court Bookings</span>
+                              </Link>
+                              <Link
+                                to="/invites"
+                                onClick={() => setProfileDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-4 py-2 hover:bg-court-800 hover:text-white"
+                              >
+                                <Mail className="w-4 h-4 text-gold-light" />
+                                <span>Team Invites</span>
+                              </Link>
+                            </>
+                          )}
                         </div>
 
                         <div className="py-1">
@@ -306,7 +401,7 @@ const Navbar = () => {
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <div className="lg:hidden bg-court-950 border-b border-court-700 px-4 pt-2 pb-6 space-y-2 animate-fade-in">
-            {NAV_LINKS.map((link) => {
+            {navLinks.map((link) => {
               const Icon = link.icon;
               return (
                 <NavLink

@@ -175,6 +175,7 @@ export const AuthProvider = ({ children }) => {
         user,
         token,
         profile,
+        roleProfile: profile,
         loading,
         isAuthenticated: !!token,
         hasCompletedProfile: user?.hasCompletedProfile || false,

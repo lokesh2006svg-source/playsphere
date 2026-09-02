@@ -22,12 +22,17 @@ import {
   PlayCircle,
   Crown,
   ShieldCheck,
-  HelpCircle,
   Info,
   Medal,
   Briefcase,
   Share2,
   CheckCircle,
+  Phone,
+  DollarSign,
+  PlusCircle,
+  Star,
+  Activity,
+  Ticket,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -41,6 +46,11 @@ const Dashboard = () => {
   const isSuperAdmin = user?.role === "super_admin" || user?.role === "admin";
   const isVenueAdmin = user?.role === "venue_admin";
   const isAdmin = isSuperAdmin || isVenueAdmin;
+
+  const role = user?.role || "player";
+  const isCoach = role === "coach";
+  const isGroundOwner = role === "ground_owner";
+  const isPlayer = !isCoach && !isGroundOwner;
 
   useEffect(() => {
     const loadOverview = async () => {
@@ -77,7 +87,7 @@ const Dashboard = () => {
 
   // Dynamic role-based feature cards
   const getFeatureCards = () => {
-    if (user?.role === "ground_owner") {
+    if (isGroundOwner) {
       return [
         {
           title: "My Listed Venues & Turfs",
@@ -88,16 +98,8 @@ const Dashboard = () => {
           cta: "Manage My Venues",
         },
         {
-          title: "List a New Turf / Court",
-          description: "Add a new synthetic turf, tennis court, or cricket ground to PlaySphere.",
-          path: "/venues",
-          icon: Calendar,
-          color: "from-gold/20 to-amber-500/20 border-gold/30 text-gold",
-          cta: "Add New Ground",
-        },
-        {
           title: "Turf Slot Reservations",
-          description: "View real-time player slot bookings, revenue & confirmed time slots.",
+          description: "View real-time player slot bookings, customer contact & revenue tracking.",
           path: "/bookings",
           icon: Clock,
           color: "from-amber-400/20 to-gold/20 border-gold/40 text-gold-light",
@@ -128,10 +130,18 @@ const Dashboard = () => {
           color: "from-court-800 to-court-850 border-court-700 text-[#F5F0E6]",
           cta: "View Directory",
         },
+        {
+          title: "Tournaments & Cups",
+          description: "Host knockout leagues and view automated match brackets.",
+          path: "/tournaments",
+          icon: Trophy,
+          color: "from-gold/20 to-yellow-500/20 border-gold/40 text-gold",
+          cta: "View Tournaments",
+        },
       ];
     }
 
-    if (user?.role === "coach") {
+    if (isCoach) {
       return [
         {
           title: "My Managed Squads & Teams",
@@ -241,48 +251,59 @@ const Dashboard = () => {
   const featureCards = getFeatureCards();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
-      {/* Hero Welcome Banner */}
-      <div className="bg-gradient-to-br from-court-900 via-court-850 to-court-950 border border-gold/30 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden shadow-gold/10">
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-gold/15 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 text-[#F5F0E6]">
+      {/* ========================================================================= */}
+      {/* 1. ROLE-SPECIFIC HERO WELCOME BANNER                                      */}
+      {/* ========================================================================= */}
 
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-gold/15 border border-gold/40 text-gold-glow rounded-full text-xs font-bold">
-              <Sparkles className="w-3.5 h-3.5 text-gold" />
-              <span>Tamil Nadu Centralized Sports Arena</span>
+      {/* 1A. COACH HERO BANNER */}
+      {isCoach && (
+        <div className="bg-gradient-to-br from-court-900 via-blue-950/40 to-court-950 border border-blue-500/40 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden shadow-blue-500/10">
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-500/15 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/15 border border-blue-500/40 text-blue-300 rounded-full text-xs font-bold">
+                <Briefcase className="w-3.5 h-3.5 text-blue-400" />
+                <span>Certified Coach Command Center</span>
+              </div>
+
+              <h1 className="text-3xl sm:text-4xl font-black text-[#F5F0E6] tracking-tight">
+                Vanakkam, Coach {user ? user.name.replace("Coach ", "").split(" ")[0] : "Coach"}! 📋
+              </h1>
+
+              <p className="text-sm text-[#9B9691] leading-relaxed">
+                Managing <strong className="text-[#F5F0E6]">{profile?.sport || "Cricket"}</strong> squads in{" "}
+                <strong className="text-[#F5F0E6]">{profile?.city || user?.city || "Chennai"}</strong> with{" "}
+                <strong className="text-blue-300">{profile?.yearsOfExperience || 10}+ years</strong> of professional coaching experience. Track team rosters, prepare match lineups, and scout talent.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-4 pt-3">
+                <Link
+                  to="/teams"
+                  className="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-black rounded-xl text-xs shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-0.5"
+                >
+                  Manage My Teams ({profile?.managedTeams?.length || 2})
+                </Link>
+                <Link
+                  to="/players"
+                  className="px-5 py-2.5 bg-court-800 hover:bg-court-750 border border-court-700 hover:border-blue-400/40 text-[#F5F0E6] font-bold rounded-xl text-xs transition-colors"
+                >
+                  Scout Nearby Athletes
+                </Link>
+                <Link
+                  to="/venues"
+                  className="px-5 py-2.5 bg-court-800 hover:bg-court-750 border border-court-700 hover:border-gold/40 text-gold font-bold rounded-xl text-xs transition-colors"
+                >
+                  Book Training Turf
+                </Link>
+              </div>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-black text-[#F5F0E6] tracking-tight">
-              Vanakkam, {user ? user.name.split(" ")[0] : "Player"}! 👋
-            </h1>
-
-            <p className="text-sm text-[#9B9691] leading-relaxed">
-              Find nearby players for <strong className="text-[#F5F0E6]">{profile?.sport || "Cricket"}</strong> in{" "}
-              <strong className="text-[#F5F0E6]">{profile?.city || user?.city || "Chennai"}</strong>, book top-rated courts, register for state tournaments, or track live matches in real time.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-4 pt-3">
-              <Link
-                to="/players"
-                className="px-5 py-2.5 bg-gradient-to-r from-gold via-amber-400 to-gold-hover hover:from-gold-hover hover:to-amber-500 text-court-950 font-black rounded-xl text-xs shadow-lg shadow-gold/20 transition-all transform hover:-translate-y-0.5"
-              >
-                Find Nearby Players
-              </Link>
-              <Link
-                to="/venues"
-                className="px-5 py-2.5 bg-court-800 hover:bg-court-750 border border-court-700 hover:border-gold/40 text-[#F5F0E6] font-bold rounded-xl text-xs transition-colors"
-              >
-                Book a Court
-              </Link>
-            </div>
-          </div>
-
-          {/* Quick Athlete Badge Card */}
-          {user && (
-            <div className="w-full md:w-auto shrink-0 bg-court-950/90 border border-gold/30 rounded-2xl p-4 sm:p-5 flex items-center gap-4 shadow-xl shadow-gold/5">
-              <div className="w-14 h-14 rounded-2xl bg-court-800 border-2 border-gold/60 flex items-center justify-center text-xl font-bold text-gold shadow-inner overflow-hidden">
+            {/* Quick Coach ID Badge */}
+            <div className="w-full md:w-auto shrink-0 bg-court-950/90 border border-blue-500/40 rounded-2xl p-4 sm:p-5 flex items-center gap-4 shadow-xl shadow-blue-500/5">
+              <div className="w-14 h-14 rounded-2xl bg-blue-950 border-2 border-blue-400 flex items-center justify-center text-xl font-bold text-blue-300 shadow-inner overflow-hidden">
                 {profile?.profilePhoto ? (
                   <img
                     src={profile.profilePhoto}
@@ -290,42 +311,585 @@ const Dashboard = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  user.name.charAt(0).toUpperCase()
+                  <Briefcase className="w-7 h-7 text-blue-400" />
                 )}
               </div>
 
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-gold font-mono font-bold block">
-                    {profile?.playerIdNumber || "PS-MEMBER"}
+                  <span className="text-[10px] text-blue-300 font-mono font-bold block">
+                    PS-COACH
                   </span>
-                  <span className="text-[9px] px-1.5 py-0.2 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold rounded">
-                    ACTIVE
+                  <span className="text-[9px] px-1.5 py-0.2 bg-blue-500/20 border border-blue-500/40 text-blue-300 font-bold rounded">
+                    OFFICIAL COACH
                   </span>
                 </div>
-                <h4 className="font-bold text-[#F5F0E6] text-sm">{user.name}</h4>
+                <h4 className="font-bold text-[#F5F0E6] text-sm">{user?.name}</h4>
                 <p className="text-[11px] text-[#9B9691]">
-                  {profile?.sport || "Multi-Sport"} • {profile?.skillLevel || "Intermediate"} • {profile?.city || user?.city || "Chennai"}
+                  {profile?.sport || "Cricket"} Coach • {profile?.yearsOfExperience || 10} Yrs Exp • {profile?.city || user?.city || "Chennai"}
                 </p>
                 <div className="text-[10px] text-[#9B9691] flex items-center gap-2 mt-1">
-                  <span>📅 Member Since: <strong className="text-[#F5F0E6]">{new Date(user.createdAt || profile?.joinedDate || Date.now()).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}</strong></span>
+                  <span>Squads: <strong className="text-blue-300">{profile?.managedTeams?.length || 2} Active Teams</strong></span>
                   <span>•</span>
-                  <span>🕒 Active: <strong className="text-gold">{new Date(user.lastLoginAt || user.createdAt || Date.now()).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</strong></span>
+                  <span>Phone: <strong className="text-[#F5F0E6]">{profile?.phone || "+91 98401 55667"}</strong></span>
                 </div>
                 <Link
                   to="/profile"
-                  className="text-[10px] font-bold text-gold hover:underline inline-block mt-1"
+                  className="text-[10px] font-bold text-blue-400 hover:underline inline-block mt-1"
                 >
-                  View Full Profile & Passport →
+                  View Coach Profile & Rosters →
                 </Link>
               </div>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Featured Live Match Alert (if any live match) */}
-      {liveMatches.length > 0 && (
+      {/* 1B. GROUND OWNER HERO BANNER */}
+      {isGroundOwner && (
+        <div className="bg-gradient-to-br from-court-900 via-emerald-950/30 to-court-950 border border-emerald-500/40 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden shadow-emerald-500/10">
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 rounded-full text-xs font-bold">
+                <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Verified Turf & Sports Ground Partner</span>
+              </div>
+
+              <h1 className="text-3xl sm:text-4xl font-black text-[#F5F0E6] tracking-tight">
+                Vanakkam, {user ? user.name.split(" ")[0] : "Owner"}! 🏟️
+              </h1>
+
+              <p className="text-sm text-[#9B9691] leading-relaxed">
+                Managing <strong className="text-[#F5F0E6]">{profile?.businessName || "Marina Grand Sports Arena & Turfs"}</strong> in{" "}
+                <strong className="text-[#F5F0E6]">{profile?.city || user?.city || "Chennai"}</strong>. Manage your synthetic grounds, set hourly rates, and monitor real-time booking reservations and earnings.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-4 pt-3">
+                <Link
+                  to="/venues"
+                  className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black rounded-xl text-xs shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5"
+                >
+                  My Listed Venues ({profile?.managedVenues?.length || 2})
+                </Link>
+                <Link
+                  to="/bookings"
+                  className="px-5 py-2.5 bg-court-800 hover:bg-court-750 border border-court-700 hover:border-emerald-400/40 text-[#F5F0E6] font-bold rounded-xl text-xs transition-colors"
+                >
+                  View Slot Reservations
+                </Link>
+                <Link
+                  to="/venues"
+                  className="px-5 py-2.5 bg-court-800 hover:bg-court-750 border border-court-700 hover:border-gold/40 text-gold font-bold rounded-xl text-xs transition-colors"
+                >
+                  + Add New Ground
+                </Link>
+              </div>
+            </div>
+
+            {/* Quick Venue Owner ID Badge */}
+            <div className="w-full md:w-auto shrink-0 bg-court-950/90 border border-emerald-500/40 rounded-2xl p-4 sm:p-5 flex items-center gap-4 shadow-xl shadow-emerald-500/5">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-950 border-2 border-emerald-400 flex items-center justify-center text-xl font-bold text-emerald-300 shadow-inner overflow-hidden">
+                <Building2 className="w-7 h-7 text-emerald-400" />
+              </div>
+
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-emerald-300 font-mono font-bold block">
+                    PS-VENUE-OWNER
+                  </span>
+                  <span className="text-[9px] px-1.5 py-0.2 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold rounded">
+                    VERIFIED PARTNER
+                  </span>
+                </div>
+                <h4 className="font-bold text-[#F5F0E6] text-sm">{profile?.businessName || user?.name}</h4>
+                <p className="text-[11px] text-[#9B9691]">
+                  Facility Owner: {user?.name} • {profile?.city || user?.city || "Chennai"}
+                </p>
+                <div className="text-[10px] text-[#9B9691] flex items-center gap-2 mt-1">
+                  <span>Venues: <strong className="text-emerald-300">{profile?.managedVenues?.length || 2} Turfs Listed</strong></span>
+                  <span>•</span>
+                  <span>Contact: <strong className="text-[#F5F0E6]">{profile?.contactPhone || "+91 98401 23456"}</strong></span>
+                </div>
+                <Link
+                  to="/profile"
+                  className="text-[10px] font-bold text-emerald-400 hover:underline inline-block mt-1"
+                >
+                  View Facility Profile & Pricing →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 1C. PLAYER / GENERAL ATHLETE HERO BANNER */}
+      {isPlayer && (
+        <div className="bg-gradient-to-br from-court-900 via-court-850 to-court-950 border border-gold/30 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden shadow-gold/10">
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-gold/15 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-gold/15 border border-gold/40 text-gold-glow rounded-full text-xs font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-gold" />
+                <span>Tamil Nadu Centralized Sports Arena</span>
+              </div>
+
+              <h1 className="text-3xl sm:text-4xl font-black text-[#F5F0E6] tracking-tight">
+                Vanakkam, {user ? user.name.split(" ")[0] : "Player"}! 👋
+              </h1>
+
+              <p className="text-sm text-[#9B9691] leading-relaxed">
+                Find nearby players for <strong className="text-[#F5F0E6]">{profile?.sport || "Cricket"}</strong> in{" "}
+                <strong className="text-[#F5F0E6]">{profile?.city || user?.city || "Chennai"}</strong>, book top-rated courts, register for state tournaments, or track live matches in real time.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-4 pt-3">
+                <Link
+                  to="/players"
+                  className="px-5 py-2.5 bg-gradient-to-r from-gold via-amber-400 to-gold-hover hover:from-gold-hover hover:to-amber-500 text-court-950 font-black rounded-xl text-xs shadow-lg shadow-gold/20 transition-all transform hover:-translate-y-0.5"
+                >
+                  Find Nearby Players
+                </Link>
+                <Link
+                  to="/venues"
+                  className="px-5 py-2.5 bg-court-800 hover:bg-court-750 border border-court-700 hover:border-gold/40 text-[#F5F0E6] font-bold rounded-xl text-xs transition-colors"
+                >
+                  Book a Court
+                </Link>
+              </div>
+            </div>
+
+            {/* Quick Athlete Badge Card */}
+            {user && (
+              <div className="w-full md:w-auto shrink-0 bg-court-950/90 border border-gold/30 rounded-2xl p-4 sm:p-5 flex items-center gap-4 shadow-xl shadow-gold/5">
+                <div className="w-14 h-14 rounded-2xl bg-court-800 border-2 border-gold/60 flex items-center justify-center text-xl font-bold text-gold shadow-inner overflow-hidden">
+                  {profile?.profilePhoto ? (
+                    <img
+                      src={profile.profilePhoto}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    user.name.charAt(0).toUpperCase()
+                  )}
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-gold font-mono font-bold block">
+                      {profile?.playerIdNumber || "PS-MEMBER"}
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.2 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold rounded">
+                      ACTIVE ATHLETE
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-[#F5F0E6] text-sm">{user.name}</h4>
+                  <p className="text-[11px] text-[#9B9691]">
+                    {profile?.sport || "Multi-Sport"} • <span className="capitalize">{profile?.skillLevel || "Intermediate"}</span> • {profile?.city || user?.city || "Chennai"}
+                  </p>
+                  <div className="text-[10px] text-[#9B9691] flex items-center gap-2 mt-1">
+                    <span>⭐ Rating: <strong className="text-amber-400">{profile?.rating ? profile.rating.toFixed(1) : "4.8"} / 5.0</strong></span>
+                    <span>•</span>
+                    <span>Won: <strong className="text-gold">{profile?.matchesWon || 0} Matches</strong></span>
+                  </div>
+                  <Link
+                    to="/profile"
+                    className="text-[10px] font-bold text-gold hover:underline inline-block mt-1"
+                  >
+                    View Full Athlete Passport & ID Card →
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 2. ROLE-SPECIFIC DETAILED SECTIONS                                        */}
+      {/* ========================================================================= */}
+
+      {/* 2A. COACH: MANAGED TEAMS & UPCOMING FIXTURES */}
+      {isCoach && (
+        <div className="space-y-8 animate-fade-in">
+          {/* Managed Teams Section */}
+          <div className="bg-court-900 border border-court-700 rounded-3xl p-6 sm:p-8 shadow-xl shadow-blue-500/5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-court-750">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-blue-400" />
+                  <h2 className="text-xl font-black text-[#F5F0E6]">My Managed Teams & Squads</h2>
+                </div>
+                <p className="text-xs text-[#9B9691] mt-0.5">
+                  Rosters, player assignments, and official tournament entries under your supervision
+                </p>
+              </div>
+
+              <Link
+                to="/teams"
+                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all self-start sm:self-auto"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Create New Squad</span>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {(profile?.managedTeams?.length > 0
+                ? profile.managedTeams
+                : [
+                    {
+                      name: "Chennai Super Smashers",
+                      sport: "Cricket",
+                      city: "Chennai",
+                      rosterCount: 3,
+                      bio: "Active T20 weekend cricket club based out of Chennai.",
+                      stats: { matchesPlayed: 14, matchesWon: 11, matchesLost: 3 },
+                    },
+                    {
+                      name: "Kovai Thunderbolts",
+                      sport: "Cricket",
+                      city: "Coimbatore",
+                      rosterCount: 2,
+                      bio: "Coimbatore division champions known for aggressive batting lineups.",
+                      stats: { matchesPlayed: 12, matchesWon: 8, matchesLost: 4 },
+                    },
+                  ]
+              ).map((team, idx) => (
+                <div
+                  key={idx}
+                  className="p-5 bg-court-950 border border-blue-500/30 hover:border-blue-400 rounded-2xl flex flex-col justify-between group transition-all"
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-blue-950 border border-blue-500/40 flex items-center justify-center text-blue-300 font-bold text-lg shadow-sm">
+                          {team.logo ? (
+                            <img src={team.logo} alt={team.name} className="w-full h-full object-cover rounded-xl" />
+                          ) : (
+                            <Shield className="w-6 h-6 text-blue-400" />
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-[#F5F0E6] text-base group-hover:text-blue-300 transition-colors">
+                            {team.name}
+                          </h3>
+                          <p className="text-xs text-[#9B9691] flex items-center gap-2">
+                            <span>⚡ {team.sport}</span>
+                            <span>•</span>
+                            <span>📍 {team.city}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <span className="px-2.5 py-1 bg-blue-500/15 border border-blue-500/40 text-blue-300 text-[10px] font-bold rounded-full">
+                        {team.rosterCount || team.members?.length || 0} Players Roster
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-[#9B9691] line-clamp-2 leading-relaxed mb-4 italic">
+                      "{team.bio || "Competitive sports squad competing in state divisions."}"
+                    </p>
+
+                    {/* Team Record */}
+                    <div className="grid grid-cols-3 gap-2 py-2 px-3 bg-court-900 rounded-xl border border-court-800 text-center text-xs mb-4">
+                      <div>
+                        <span className="text-[10px] text-[#9B9691] block">Played</span>
+                        <strong className="text-[#F5F0E6]">{team.stats?.matchesPlayed || 0}</strong>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-emerald-400 block">Won</span>
+                        <strong className="text-emerald-400">{team.stats?.matchesWon || 0}</strong>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-red-400 block">Lost</span>
+                        <strong className="text-red-400">{team.stats?.matchesLost || 0}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-court-800 flex items-center justify-between">
+                    <Link
+                      to="/teams"
+                      className="text-xs font-bold text-blue-400 hover:underline flex items-center gap-1"
+                    >
+                      <span>Manage Squad Roster</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+
+                    <Link
+                      to="/tournaments"
+                      className="px-3 py-1 bg-court-850 hover:bg-court-800 border border-court-700 text-[#F5F0E6] text-xs font-semibold rounded-lg transition-colors"
+                    >
+                      Enter Cup
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Upcoming Matches for Coach */}
+          <div className="bg-court-900 border border-court-700 rounded-3xl p-6 sm:p-8 shadow-xl">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-court-750">
+              <div className="flex items-center gap-2">
+                <Radio className="w-5 h-5 text-red-400" />
+                <h2 className="text-xl font-black text-[#F5F0E6]">Upcoming Team Fixtures</h2>
+              </div>
+              <Link to="/live" className="text-xs font-bold text-gold hover:underline">
+                View All Match Feeds →
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 bg-court-950 border border-red-500/30 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-[10px] font-extrabold rounded-md animate-pulse">
+                      LIVE MATCH
+                    </span>
+                    <span className="text-xs text-[#9B9691]">Cricket • State T20</span>
+                  </div>
+                  <h3 className="font-bold text-white text-base">
+                    Chennai Super Smashers vs Kovai Thunderbolts
+                  </h3>
+                  <p className="text-xs text-red-300 font-medium mt-1">
+                    Live • Kovai Thunderbolts require 27 runs from 10 balls
+                  </p>
+                  <p className="text-[11px] text-[#9B9691] mt-2 flex items-center gap-1.5">
+                    <MapPin className="w-3 h-3 text-gold" />
+                    Chepauk Pavilion Cricket Nets & Ground, Chennai
+                  </p>
+                </div>
+                <div className="mt-4 pt-2 border-t border-court-800 flex justify-end">
+                  <Link
+                    to="/live"
+                    className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-red-600/30 transition-all"
+                  >
+                    <PlayCircle className="w-3.5 h-3.5" />
+                    <span>Watch Match Feed</span>
+                  </Link>
+                </div>
+              </div>
+
+              <div className="p-4 bg-court-950 border border-court-750 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="px-2 py-0.5 bg-gold/15 text-gold text-[10px] font-bold rounded-md">
+                      SCHEDULED
+                    </span>
+                    <span className="text-xs text-[#9B9691]">Cricket • Semifinal</span>
+                  </div>
+                  <h3 className="font-bold text-white text-base">
+                    Chennai Super Smashers vs Rockfort Blasters
+                  </h3>
+                  <p className="text-xs text-gold-glow font-medium mt-1">
+                    Scheduled Tomorrow • 04:00 PM IST
+                  </p>
+                  <p className="text-[11px] text-[#9B9691] mt-2 flex items-center gap-1.5">
+                    <MapPin className="w-3 h-3 text-gold" />
+                    Chepauk Stadium, Chennai
+                  </p>
+                </div>
+                <div className="mt-4 pt-2 border-t border-court-800 flex justify-end">
+                  <Link
+                    to="/tournaments"
+                    className="px-3.5 py-1.5 bg-court-800 hover:bg-court-750 text-[#F5F0E6] font-bold rounded-xl text-xs border border-court-700 transition-colors"
+                  >
+                    <span>View Tournament Bracket</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2B. GROUND OWNER: MANAGED VENUES & RECENT BOOKINGS */}
+      {isGroundOwner && (
+        <div className="space-y-8 animate-fade-in">
+          {/* Revenue & Stats Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="p-5 bg-court-900 border border-emerald-500/30 rounded-2xl text-center">
+              <span className="text-3xl font-black text-emerald-400 block">
+                {profile?.managedVenues?.length || 2}
+              </span>
+              <span className="text-[11px] font-bold text-[#9B9691] uppercase tracking-wider">
+                Listed Grounds
+              </span>
+            </div>
+            <div className="p-5 bg-court-900 border border-emerald-500/30 rounded-2xl text-center">
+              <span className="text-3xl font-black text-[#F5F0E6] block">
+                {profile?.bookingStats?.totalBookings || 24}
+              </span>
+              <span className="text-[11px] font-bold text-[#9B9691] uppercase tracking-wider">
+                Total Bookings
+              </span>
+            </div>
+            <div className="p-5 bg-court-900 border border-emerald-500/30 rounded-2xl text-center">
+              <span className="text-3xl font-black text-gold block">
+                ₹{(profile?.bookingStats?.totalRevenue || 28800).toLocaleString("en-IN")}
+              </span>
+              <span className="text-[11px] font-bold text-[#9B9691] uppercase tracking-wider">
+                Turf Revenue
+              </span>
+            </div>
+            <div className="p-5 bg-court-900 border border-emerald-500/30 rounded-2xl text-center">
+              <span className="text-3xl font-black text-amber-300 block">4.9 ★</span>
+              <span className="text-[11px] font-bold text-[#9B9691] uppercase tracking-wider">
+                Avg Turf Rating
+              </span>
+            </div>
+          </div>
+
+          {/* Managed Venues List */}
+          <div className="bg-court-900 border border-court-700 rounded-3xl p-6 sm:p-8 shadow-xl shadow-emerald-500/5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-court-750">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-emerald-400" />
+                  <h2 className="text-xl font-black text-[#F5F0E6]">My Listed Venues & Turfs</h2>
+                </div>
+                <p className="text-xs text-[#9B9691] mt-0.5">
+                  Real-time court availability, slot pricing, and synthetic turf configurations
+                </p>
+              </div>
+
+              <Link
+                to="/venues"
+                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all self-start sm:self-auto"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>+ List New Turf</span>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {(profile?.managedVenues?.length > 0
+                ? profile.managedVenues
+                : [
+                    {
+                      name: "Marina Grand Sports Turf",
+                      sportType: "Football",
+                      city: "Chennai",
+                      address: "54 Kamarajar Salai, Marina Beach Road, Chennai",
+                      pricePerHour: 1200,
+                      photos: ["https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80"],
+                      rating: 4.9,
+                      reviewCount: 56,
+                    },
+                    {
+                      name: "Chepauk Pavilion Cricket Nets & Ground",
+                      sportType: "Cricket",
+                      city: "Chennai",
+                      address: "Victoria Hostel Rd, Chepauk, Chennai",
+                      pricePerHour: 800,
+                      photos: ["https://images.unsplash.com/photo-1531415074868-036b1c57e329?auto=format&fit=crop&w=800&q=80"],
+                      rating: 4.8,
+                      reviewCount: 42,
+                    },
+                  ]
+              ).map((venue, idx) => (
+                <div
+                  key={idx}
+                  className="bg-court-950 border border-emerald-500/30 hover:border-emerald-400 rounded-2xl p-4 flex flex-col justify-between group transition-all"
+                >
+                  <div className="flex gap-4">
+                    <div className="w-24 h-24 rounded-xl bg-court-900 border border-court-700 overflow-hidden shrink-0">
+                      <img
+                        src={venue.photos?.[0] || "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=400&q=80"}
+                        alt={venue.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 bg-emerald-500/15 text-emerald-300 text-[10px] font-bold rounded-md">
+                          {venue.sportType}
+                        </span>
+                        <span className="text-xs text-amber-400 font-bold">
+                          ★ {venue.rating || 4.8} ({venue.reviewCount || 24})
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-[#F5F0E6] text-sm group-hover:text-emerald-300 transition-colors line-clamp-1">
+                        {venue.name}
+                      </h3>
+                      <p className="text-[11px] text-[#9B9691] flex items-center gap-1 line-clamp-1">
+                        <MapPin className="w-3 h-3 text-gold shrink-0" />
+                        {venue.address || venue.city}
+                      </p>
+                      <p className="text-xs font-black text-gold">
+                        ₹{venue.pricePerHour} <span className="text-[10px] text-[#9B9691] font-normal">/ hour slot</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-court-800 flex items-center justify-between">
+                    <Link
+                      to="/bookings"
+                      className="text-xs font-bold text-emerald-400 hover:underline flex items-center gap-1"
+                    >
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>View Slot Bookings</span>
+                    </Link>
+                    <Link
+                      to="/venues"
+                      className="px-3 py-1 bg-court-850 hover:bg-court-800 text-[#F5F0E6] text-xs font-semibold rounded-lg border border-court-700 transition-colors"
+                    >
+                      Edit Ground Info
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2C. PLAYER: STATS & DISCOVERY OVERVIEW */}
+      {isPlayer && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fade-in">
+          <div className="p-5 bg-court-900 border border-gold/30 rounded-2xl text-center">
+            <span className="text-3xl font-black text-[#F5F0E6] block">
+              {profile?.matchesPlayed || 41}
+            </span>
+            <span className="text-[11px] font-bold text-[#9B9691] uppercase tracking-wider">
+              Matches Played
+            </span>
+          </div>
+          <div className="p-5 bg-court-900 border border-gold/30 rounded-2xl text-center">
+            <span className="text-3xl font-black text-gold block">
+              {profile?.matchesWon || 33}
+            </span>
+            <span className="text-[11px] font-bold text-[#9B9691] uppercase tracking-wider">
+              Matches Won
+            </span>
+          </div>
+          <div className="p-5 bg-court-900 border border-gold/30 rounded-2xl text-center">
+            <span className="text-3xl font-black text-amber-400 block">
+              {profile?.rating ? profile.rating.toFixed(1) : "4.8"} ★
+            </span>
+            <span className="text-[11px] font-bold text-[#9B9691] uppercase tracking-wider">
+              Athlete Rating
+            </span>
+          </div>
+          <div className="p-5 bg-court-900 border border-gold/30 rounded-2xl text-center">
+            <span className="text-3xl font-black text-emerald-400 block">
+              {tournamentCount}
+            </span>
+            <span className="text-[11px] font-bold text-[#9B9691] uppercase tracking-wider">
+              Active Tournaments
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Featured Live Match Alert (For Players & Owners if live match exists) */}
+      {!isCoach && liveMatches.length > 0 && (
         <div className="bg-gradient-to-r from-red-950/40 via-court-900 to-red-950/40 border border-red-500/40 rounded-3xl p-6 shadow-xl relative overflow-hidden animate-glow">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -416,178 +980,30 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* 3-Role Unified Public Portals Showcase */}
-      <div className="bg-gradient-to-r from-court-950 via-court-900 to-court-950 border border-court-750 rounded-3xl p-6 sm:p-8 shadow-xl shadow-gold/5 relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-court-750">
-          <div>
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-gold" />
-              <h2 className="text-xl font-black text-[#F5F0E6]">Unified Sports Ecosystem for Tamil Nadu</h2>
-            </div>
-            <p className="text-xs text-[#9B9691] mt-1">
-              Purpose-built digital experiences for Athletes, Certified Coaches, and Turf Facility Owners
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-[#9B9691] hidden sm:inline">Share Platform:</span>
-            <Link
-              to="/signup"
-              className="px-4 py-2 bg-gold hover:bg-gold-hover text-court-950 font-black rounded-xl text-xs flex items-center gap-1.5 transition-colors shadow-md shadow-gold/15"
-            >
-              <span>Get Started Free</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Portal 1: Athletes & Players */}
-          <div className="p-5 bg-court-950/80 border border-gold/30 hover:border-gold rounded-2xl flex flex-col justify-between group transition-all">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/40 flex items-center justify-center text-gold shadow-sm">
-                  <Medal className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-black text-gold uppercase px-2 py-0.5 bg-gold/10 rounded-full border border-gold/30">
-                  For Athletes
-                </span>
-              </div>
-              <h3 className="text-base font-black text-[#F5F0E6] group-hover:text-gold transition-colors">
-                Player Experience
-              </h3>
-              <ul className="mt-2 space-y-1.5 text-xs text-[#9B9691]">
-                <li className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-gold shrink-0" />
-                  <span>Verified Digital Sports Pass (`PS-2026-XXXX`)</span>
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-gold shrink-0" />
-                  <span>GPS Proximity Player Discovery (1-50 km)</span>
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-gold shrink-0" />
-                  <span>Real-time Court & Turf Slot Reservations</span>
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-gold shrink-0" />
-                  <span>Knockout Tournaments & Visual Brackets</span>
-                </li>
-              </ul>
-            </div>
-            <div className="mt-4 pt-3 border-t border-court-800 flex items-center justify-between">
-              <Link
-                to="/players"
-                className="text-xs font-bold text-gold hover:underline flex items-center gap-1"
-              >
-                <span>Find Nearby Players</span>
-                <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Portal 2: Coaches & Team Managers */}
-          <div className="p-5 bg-court-950/80 border border-blue-500/30 hover:border-blue-500 rounded-2xl flex flex-col justify-between group transition-all">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/40 flex items-center justify-center text-blue-400 shadow-sm">
-                  <Briefcase className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-black text-blue-300 uppercase px-2 py-0.5 bg-blue-500/10 rounded-full border border-blue-500/30">
-                  For Coaches
-                </span>
-              </div>
-              <h3 className="text-base font-black text-[#F5F0E6] group-hover:text-blue-300 transition-colors">
-                Coach Portal
-              </h3>
-              <ul className="mt-2 space-y-1.5 text-xs text-[#9B9691]">
-                <li className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                  <span>Official Squad & Team Roster Management</span>
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                  <span>Recruit Players across 38 TN Districts</span>
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                  <span>Register Squads for State Championships</span>
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                  <span>Reserve Practice Grounds & Turfs</span>
-                </li>
-              </ul>
-            </div>
-            <div className="mt-4 pt-3 border-t border-court-800 flex items-center justify-between">
-              <Link
-                to="/teams"
-                className="text-xs font-bold text-blue-400 hover:underline flex items-center gap-1"
-              >
-                <span>Manage Squads</span>
-                <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Portal 3: Ground & Turf Owners */}
-          <div className="p-5 bg-court-950/80 border border-emerald-500/30 hover:border-emerald-500 rounded-2xl flex flex-col justify-between group transition-all">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-sm">
-                  <Building2 className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-black text-emerald-300 uppercase px-2 py-0.5 bg-emerald-500/10 rounded-full border border-emerald-500/30">
-                  For Ground Owners
-                </span>
-              </div>
-              <h3 className="text-base font-black text-[#F5F0E6] group-hover:text-emerald-300 transition-colors">
-                Turf Facility Portal
-              </h3>
-              <ul className="mt-2 space-y-1.5 text-xs text-[#9B9691]">
-                <li className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>List Synthetic Turfs, Courts & Grounds</span>
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>Automated 1-Hour Slot Engine & Conflict Lock</span>
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>Integrated UPI QR Payment Flow</span>
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>Real-time Reservation & Revenue Tracking</span>
-                </li>
-              </ul>
-            </div>
-            <div className="mt-4 pt-3 border-t border-court-800 flex items-center justify-between">
-              <Link
-                to="/venues"
-                className="text-xs font-bold text-emerald-400 hover:underline flex items-center gap-1"
-              >
-                <span>Browse & List Grounds</span>
-                <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Navigation Feature Grid */}
+      {/* ========================================================================= */}
+      {/* 3. PLATFORM MODULES & FEATURE GRID                                        */}
+      {/* ========================================================================= */}
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-[#F5F0E6]">Platform Modules & Features</h2>
+            <h2 className="text-xl font-bold text-[#F5F0E6]">
+              {isCoach
+                ? "Coach Tools & Resources"
+                : isGroundOwner
+                ? "Facility Owner Operations"
+                : "Platform Modules & Features"}
+            </h2>
             <p className="text-xs text-[#9B9691] mt-0.5">
-              Everything you need to organize, compete, and connect
+              {isCoach
+                ? "Everything you need to manage your squad, scout players, and win cups"
+                : isGroundOwner
+                ? "Tools to monetize your sports ground and manage real-time reservations"
+                : "Everything you need to organize, compete, and connect"}
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {featureCards.map((card) => {
             const Icon = card.icon;
             return (
@@ -636,22 +1052,25 @@ const Dashboard = () => {
           </div>
           <div>
             <h4 className="font-bold text-[#F5F0E6] text-sm flex items-center gap-2">
-              <span>PlaySphere Role Permissions</span>
+              <span>PlaySphere Role Context</span>
               {user && (
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                   isSuperAdmin 
                     ? "bg-gold/20 text-gold-glow border-gold/50" 
-                    : isVenueAdmin 
-                    ? "bg-amber-500/20 text-amber-300 border-amber-500/40" 
+                    : isCoach
+                    ? "bg-blue-500/20 text-blue-300 border-blue-500/40"
+                    : isGroundOwner
+                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
                     : "bg-court-800 text-[#9B9691] border-court-700"
                 }`}>
-                  Your Role: {isSuperAdmin ? "Super Admin" : isVenueAdmin ? "Venue Admin" : "Player"}
+                  Current Role: {user.role ? user.role.replace("_", " ").toUpperCase() : "PLAYER"}
                 </span>
               )}
             </h4>
             <p className="text-[#9B9691] mt-1 leading-relaxed">
-              <strong className="text-[#F5F0E6]">Players</strong> can book venues, join squads, register for cups, and view live matches.{" "}
-              <strong className="text-[#F5F0E6]">Admins</strong> can additionally create venues, schedule live broadcast fixtures, view audit logs, and manage platform data.
+              {isCoach && "You are viewing the Coach Command Portal. You can register teams, manage squad rosters, and prepare tournament lineups."}
+              {isGroundOwner && "You are viewing the Ground Owner Facility Portal. You can manage synthetic turfs, set hourly pricing, and view reservations."}
+              {isPlayer && "You are viewing the Athlete Portal. You can find nearby players, book turf slots, and register for state championships."}
             </p>
           </div>
         </div>

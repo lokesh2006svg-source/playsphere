@@ -8,6 +8,7 @@ import Team from "../models/Team.js";
 import Venue from "../models/Venue.js";
 import User from "../models/User.js";
 import { TN_DISTRICT_COORDINATES } from "../constants/tnDistricts.js";
+import { fetchProfileForUser } from "./authController.js";
 
 // Export coordinates for all 38 Tamil Nadu districts
 export const CITY_COORDINATES = TN_DISTRICT_COORDINATES;
@@ -157,10 +158,14 @@ export const createOrUpdateProfile = async (req, res) => {
       console.warn("Socket emit error:", err.message);
     }
 
+    // Fetch fully enriched profile based on role
+    const fullProfile = await fetchProfileForUser(req.user._id, req.user.role);
+
     res.json({
       success: true,
       message: "Profile updated successfully.",
-      profile,
+      profile: fullProfile || profile,
+      roleProfile: fullProfile || profile,
       user: updatedUser,
     });
   } catch (error) {

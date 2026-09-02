@@ -531,7 +531,7 @@ export const seedDatabase = async () => {
       }
     }
 
-    const [adminUser, karthikUser, ananyaUser, muthuUser, praveenUser] = seededUsers;
+    const [adminUser, karthikUser, ananyaUser, muthuUser, praveenUser, deepaUser, vikramUser, dineshUser, coachUser, ownerUser] = seededUsers;
 
     // 4. Seed Venues
     const venuesData = [
@@ -548,6 +548,8 @@ export const seedDatabase = async () => {
         photos: ["https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80"],
         amenities: ["FIFA Standard AstroTurf", "LED Floodlights", "Bibs & Match Balls", "Changing Rooms"],
         contactPhone: "+91 98401 23456",
+        ownerId: ownerUser?._id || null,
+        ownerContact: { phone: "+91 98401 23456", email: "owner@playsphere.com" },
         rating: 4.9,
         reviewCount: 56,
       },
@@ -564,6 +566,8 @@ export const seedDatabase = async () => {
         photos: ["https://images.unsplash.com/photo-1531415074868-036b1c57e329?auto=format&fit=crop&w=800&q=80"],
         amenities: ["4 Turf Nets", "Bowling Machine", "Sight Screens", "Pavilion Seating"],
         contactPhone: "+91 94440 98765",
+        ownerId: ownerUser?._id || null,
+        ownerContact: { phone: "+91 94440 98765", email: "owner@playsphere.com" },
         rating: 4.8,
         reviewCount: 42,
       },
@@ -651,22 +655,47 @@ export const seedDatabase = async () => {
 
     const seededVenues = [];
     for (const v of venuesData) {
-      const venue = await safeUpsert(Venue, { name: v.name, city: v.city }, v);
+      let venue = await Venue.findOne({ name: v.name, city: v.city });
+      if (!venue) {
+        venue = await Venue.create(v);
+      } else if (v.ownerId && !venue.ownerId) {
+        venue.ownerId = v.ownerId;
+        venue.ownerContact = v.ownerContact;
+        await venue.save();
+      }
       seededVenues.push(venue);
     }
     const [marinaTurf, chepaukVenue] = seededVenues;
+
+    // Link GroundOwnerProfile to managed venues
+    if (ownerUser) {
+      await GroundOwnerProfile.findOneAndUpdate(
+        { userId: ownerUser._id },
+        {
+          $set: {
+            managedVenueIds: [marinaTurf._id, chepaukVenue._id],
+            businessName: "Marina Grand Sports Arena & Turfs",
+            contactPhone: "+91 98401 23456",
+            address: "54 Kamarajar Salai, Marina Beach Road, Chennai",
+          },
+        },
+        { upsert: true }
+      );
+    }
 
     // 5. Seed Teams
     const team1 = await safeUpsert(Team, { name: "Chennai Super Smashers", city: "Chennai", sport: "Cricket" }, {
       name: "Chennai Super Smashers",
       sport: "Cricket",
       city: "Chennai",
+      coachId: coachUser?._id || adminUser._id,
       captainId: adminUser._id,
       clubId: marinaClub._id,
       bio: "Active T20 weekend cricket club based out of Chennai.",
       members: [
         { userId: adminUser._id, role: "captain", joinedAt: new Date() },
         { userId: karthikUser._id, role: "player", joinedAt: new Date() },
+        { userId: vikramUser._id, role: "player", joinedAt: new Date() },
       ],
       stats: { matchesPlayed: 14, matchesWon: 11, matchesLost: 3, tournamentsWon: 2 },
     });
@@ -675,9 +704,13 @@ export const seedDatabase = async () => {
       name: "Kovai Thunderbolts",
       sport: "Cricket",
       city: "Coimbatore",
+      coachId: coachUser?._id || ananyaUser._id,
       captainId: ananyaUser._id,
       bio: "Coimbatore division champions known for aggressive batting lineups.",
-      members: [{ userId: ananyaUser._id, role: "captain", joinedAt: new Date() }],
+      members: [
+        { userId: ananyaUser._id, role: "captain", joinedAt: new Date() },
+        { userId: dineshUser._id, role: "player", joinedAt: new Date() },
+      ],
       stats: { matchesPlayed: 12, matchesWon: 8, matchesLost: 4, tournamentsWon: 1 },
     });
 
@@ -701,6 +734,24 @@ export const seedDatabase = async () => {
       members: [{ userId: praveenUser._id, role: "captain", joinedAt: new Date() }],
       stats: { matchesPlayed: 9, matchesWon: 5, matchesLost: 4, tournamentsWon: 0 },
     });
+
+    // Link CoachProfile to managed teams
+    if (coachUser) {
+      await CoachProfile.findOneAndUpdate(
+        { userId: coachUser._id },
+        {
+          $set: {
+            managedTeamIds: [team1._id, team2._id],
+            sport: "Cricket",
+            yearsOfExperience: 12,
+            phone: "+91 98401 55667",
+            bio: "BCCI Level-2 certified cricket coach and former state division captain.",
+            certifications: ["BCCI Level-2 Coach", "NIS Diploma in Sports Coaching"],
+          },
+        },
+        { upsert: true }
+      );
+    }
 
     // 6. Seed Tournaments
     const tournament1 = await safeUpsert(Tournament, { name: "Tamil Nadu State T20 Championship 2026", city: "Chennai", sport: "Cricket" }, {
@@ -729,6 +780,64 @@ export const seedDatabase = async () => {
       status: "approved",
       seedNumber: 1,
     });
+
+    // Seed Sample Match Fixture
+    await safeUpsert(
+      Match,
+      { title: "Chennai Super Smashers vs Kovai Thunderbolts", tournamentId: tournament1._id },
+      {
+        title: "Chennai Super Smashers vs Kovai Thunderbolts",
+        tournamentId: tournament1._id,
+        sport: "Cricket",
+        team1Id: team1._id,
+        team2Id: team2._id,
+        round: 1,
+        matchOrder: 1,
+        team1Score: "168/4 (20.0)",
+        team2Score: "142/6 (18.2)",
+        status: "live",
+        liveStatus: "Live • Kovai Thunderbolts require 27 runs from 10 balls",
+        scheduledTime: new Date(Date.now() + 2 * 60 * 60 * 1000),
+        venueId: chepaukVenue._id,
+        matchLevel: "state",
+      }
+    );
+
+    // Seed Sample Booking on Marina Turf
+    const todayStr = new Date().toISOString().split("T")[0];
+    await safeUpsert(
+      Booking,
+      { venueId: marinaTurf._id, bookingDate: todayStr, startTime: "18:00" },
+      {
+        userId: karthikUser._id,
+        venueId: marinaTurf._id,
+        bookingDate: todayStr,
+        startTime: "18:00",
+        endTime: "19:00",
+        status: "confirmed",
+        totalPrice: 1200,
+        paymentStatus: "paid",
+        paymentMethod: "upi_qr",
+        paymentTransactionId: "UPI-TXN-98401234",
+      }
+    );
+
+    await safeUpsert(
+      Booking,
+      { venueId: marinaTurf._id, bookingDate: todayStr, startTime: "19:00" },
+      {
+        userId: ananyaUser._id,
+        venueId: marinaTurf._id,
+        bookingDate: todayStr,
+        startTime: "19:00",
+        endTime: "20:00",
+        status: "confirmed",
+        totalPrice: 1200,
+        paymentStatus: "paid",
+        paymentMethod: "upi_qr",
+        paymentTransactionId: "UPI-TXN-98401235",
+      }
+    );
 
     // 7. Seed 34 Sports Rules
     for (const sportObj of SPORTS_LIST) {

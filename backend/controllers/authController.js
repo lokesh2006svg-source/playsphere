@@ -4,6 +4,10 @@ import User from "../models/User.js";
 import PlayerProfile from "../models/PlayerProfile.js";
 import GroundOwnerProfile from "../models/GroundOwnerProfile.js";
 import CoachProfile from "../models/CoachProfile.js";
+import Team from "../models/Team.js";
+import Venue from "../models/Venue.js";
+import Match from "../models/Match.js";
+import Booking from "../models/Booking.js";
 import { TN_DISTRICT_COORDINATES } from "../constants/tnDistricts.js";
 import {
   generateAccessToken,
@@ -16,15 +20,180 @@ import { sendVerificationEmail } from "../utils/emailService.js";
 import { recordAuditLog } from "../utils/auditLogger.js";
 import { syncPendingUserInvites } from "./teamController.js";
 
-// Helper: Fetch profile according to role
+// Helper: Fetch profile according to role (returns enriched role-appropriate data)
 export const fetchProfileForUser = async (userId, role) => {
   if (!userId) return null;
+
   if (role === "ground_owner") {
-    return await GroundOwnerProfile.findOne({ userId });
+    let ownerProfile = await GroundOwnerProfile.findOne({ userId }).lean();
+    if (!ownerProfile) {
+      const u = await User.findById(userId);
+      if (u) {
+        const created = await GroundOwnerProfile.create({
+          userId: u._id,
+          businessName: `${u.name}'s Sports Arena & Turfs`,
+          contactPhone: "+91 98401 23456",
+          city: u.city || "Chennai",
+          address: `${u.city || "Chennai"}, Tamil Nadu`,
+        });
+        ownerProfile = created.toObject();
+      }
+    }
+
+    // Fetch managed venues
+    const managedVenues = await Venue.find({
+      $or: [
+        { ownerId: userId },
+        { _id: { $in: ownerProfile?.managedVenueIds || [] } },
+      ],
+      isActive: true,
+    }).lean();
+
+    const venueIds = managedVenues.map((v) => v._id);
+
+    // Fetch bookings & revenue on these venues
+    const recentBookings = await Booking.find({ venueId: { $in: venueIds } })
+      .populate("userId", "name email city")
+      .populate("venueId", "name sportType city pricePerHour")
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
+
+    const totalBookings = await Booking.countDocuments({ venueId: { $in: venueIds } });
+    const paidBookings = await Booking.find({
+      venueId: { $in: venueIds },
+      paymentStatus: "paid",
+    }).lean();
+    const totalRevenue = paidBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+
+    return {
+      ...(ownerProfile || {}),
+      role: "ground_owner",
+      businessName: ownerProfile?.businessName || "Sports Arena & Turf",
+      contactPhone: ownerProfile?.contactPhone || "+91 98401 23456",
+      city: ownerProfile?.city || "Chennai",
+      address: ownerProfile?.address || `${ownerProfile?.city || "Chennai"}, Tamil Nadu`,
+      gstNumber: ownerProfile?.gstNumber || "",
+      managedVenues: managedVenues.map((v) => ({
+        _id: v._id,
+        name: v.name,
+        sportType: v.sportType,
+        city: v.city,
+        address: v.address,
+        pricePerHour: v.pricePerHour,
+        openingTime: v.openingTime,
+        closingTime: v.closingTime,
+        photos: v.photos || [],
+        amenities: v.amenities || [],
+        rating: v.rating || 4.8,
+        reviewCount: v.reviewCount || 24,
+      })),
+      bookingStats: {
+        totalVenues: managedVenues.length,
+        totalBookings,
+        totalRevenue,
+        recentBookings,
+      },
+    };
   } else if (role === "coach") {
-    return await CoachProfile.findOne({ userId });
+    let coachProfile = await CoachProfile.findOne({ userId }).lean();
+    if (!coachProfile) {
+      const u = await User.findById(userId);
+      if (u) {
+        const created = await CoachProfile.create({
+          userId: u._id,
+          sport: "Cricket",
+          yearsOfExperience: 10,
+          city: u.city || "Chennai",
+          phone: "+91 98401 55667",
+        });
+        coachProfile = created.toObject();
+      }
+    }
+
+    // Fetch managed squads & teams
+    const managedTeams = await Team.find({
+      $or: [
+        { coachId: userId },
+        { captainId: userId },
+        { _id: { $in: coachProfile?.managedTeamIds || [] } },
+      ],
+    })
+      .populate("members.userId", "name email city profilePhoto")
+      .populate("captainId", "name email city")
+      .lean();
+
+    const teamIds = managedTeams.map((t) => t._id);
+
+    // Fetch upcoming and live matches for these teams
+    const upcomingMatches = await Match.find({
+      $or: [{ team1Id: { $in: teamIds } }, { team2Id: { $in: teamIds } }],
+      status: { $in: ["scheduled", "live"] },
+    })
+      .populate("team1Id", "name logo sport")
+      .populate("team2Id", "name logo sport")
+      .populate("venueId", "name city address")
+      .populate("tournamentId", "name format")
+      .sort({ scheduledTime: 1 })
+      .limit(6)
+      .lean();
+
+    return {
+      ...(coachProfile || {}),
+      role: "coach",
+      sport: coachProfile?.sport || "Cricket",
+      yearsOfExperience: coachProfile?.yearsOfExperience !== undefined ? coachProfile.yearsOfExperience : 10,
+      certifications: coachProfile?.certifications?.length > 0 ? coachProfile.certifications : ["BCCI Level-2 Coach", "NIS Certified Coach"],
+      city: coachProfile?.city || "Chennai",
+      phone: coachProfile?.phone || "+91 98401 55667",
+      bio: coachProfile?.bio || "Certified coach dedicated to tactical development and talent training in Tamil Nadu.",
+      managedTeams: managedTeams.map((t) => ({
+        _id: t._id,
+        name: t.name,
+        sport: t.sport,
+        city: t.city,
+        logo: t.logo,
+        bio: t.bio,
+        rosterCount: t.members?.length || 0,
+        members: t.members || [],
+        captain: t.captainId,
+        stats: t.stats || { matchesPlayed: 0, matchesWon: 0, matchesLost: 0 },
+      })),
+      upcomingMatches,
+    };
   } else {
-    return await PlayerProfile.findOne({ userId });
+    // Player Profile
+    let playerProfile = await PlayerProfile.findOne({ userId }).lean();
+    if (!playerProfile) {
+      const u = await User.findById(userId);
+      if (u) {
+        const created = await PlayerProfile.create({
+          userId: u._id,
+          sport: "Cricket",
+          city: u.city || "Chennai",
+          skillLevel: "intermediate",
+          rating: 4.5,
+        });
+        playerProfile = created.toObject();
+      }
+    }
+
+    return {
+      ...(playerProfile || {}),
+      role: "player",
+      sport: playerProfile?.sport || "Cricket",
+      secondarySports: playerProfile?.secondarySports || [],
+      skillLevel: playerProfile?.skillLevel || "intermediate",
+      rating: playerProfile?.rating !== undefined ? playerProfile.rating : 4.5,
+      city: playerProfile?.city || "Chennai",
+      playerIdNumber: playerProfile?.playerIdNumber || "PS-2026-MEMBER",
+      badges: playerProfile?.badges || ["Verified Athlete", "Early Adopter"],
+      matchesPlayed: playerProfile?.matchesPlayed || 0,
+      matchesWon: playerProfile?.matchesWon || 0,
+      preferredPlayTime: playerProfile?.preferredPlayTime || "Evenings (5 PM - 8 PM)",
+      bio: playerProfile?.bio || "",
+      profilePhoto: playerProfile?.profilePhoto || "",
+    };
   }
 };
 
@@ -168,6 +337,8 @@ export const register = async (req, res) => {
       console.warn("Socket emit error:", err.message);
     }
 
+    const fullProfile = await fetchProfileForUser(user._id, user.role);
+
     res.status(201).json({
       success: true,
       token: accessToken,
@@ -184,7 +355,8 @@ export const register = async (req, res) => {
         createdAt: user.createdAt,
         lastLoginAt: user.lastLoginAt || user.createdAt,
       },
-      profile: profile || null,
+      profile: fullProfile || null,
+      roleProfile: fullProfile || null,
       message: `Registration successful as ${assignedRole.replace("_", " ")}! Welcome to PlaySphere.`,
     });
   } catch (error) {
@@ -334,6 +506,7 @@ export const verifyEmail = async (req, res) => {
         createdAt: user.createdAt,
       },
       profile: profile || null,
+      roleProfile: profile || null,
     });
   } catch (error) {
     console.error("Verify email error:", error);
@@ -531,6 +704,7 @@ export const login = async (req, res) => {
         lastLoginAt: user.lastLoginAt,
       },
       profile: profile || null,
+      roleProfile: profile || null,
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -659,6 +833,7 @@ export const getMe = async (req, res) => {
       success: true,
       user,
       profile: profile || null,
+      roleProfile: profile || null,
     });
   } catch (error) {
     console.error("GetMe error:", error);
