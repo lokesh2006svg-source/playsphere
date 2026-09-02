@@ -646,64 +646,78 @@ const Dashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 bg-court-950 border border-red-500/30 rounded-2xl flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-[10px] font-extrabold rounded-md animate-pulse">
-                      LIVE MATCH
-                    </span>
-                    <span className="text-xs text-[#9B9691]">Cricket • State T20</span>
+              {(profile?.upcomingMatches && profile.upcomingMatches.length > 0
+                ? profile.upcomingMatches
+                : [
+                    {
+                      team1Id: { name: "Chennai Super Smashers" },
+                      team2Id: { name: "Kovai Thunderbolts" },
+                      sport: "Cricket",
+                      status: "live",
+                      scheduledTime: new Date(),
+                      liveStatus: "Live • Kovai Thunderbolts require 27 runs from 10 balls",
+                      venueId: { name: "Chepauk Pavilion Cricket Nets & Ground, Chennai" },
+                    },
+                    {
+                      team1Id: { name: "Chennai Super Smashers" },
+                      team2Id: { name: "Rockfort Blasters" },
+                      sport: "Cricket",
+                      status: "scheduled",
+                      scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                      venueId: { name: "Chepauk Stadium, Chennai" },
+                    },
+                  ]
+              ).map((m, mIdx) => (
+                <div
+                  key={mIdx}
+                  className={`p-4 bg-court-950 rounded-2xl flex flex-col justify-between border ${
+                    m.status === "live" ? "border-red-500/30" : "border-court-750"
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded-md ${
+                        m.status === "live"
+                          ? "bg-red-500/20 text-red-400 font-extrabold animate-pulse"
+                          : "bg-gold/15 text-gold"
+                      }`}>
+                        {m.status === "live" ? "LIVE MATCH" : "SCHEDULED"}
+                      </span>
+                      <span className="text-xs text-[#9B9691]">{m.sport || "Cricket"} • Fixture</span>
+                    </div>
+                    <h3 className="font-bold text-white text-base">
+                      {m.team1Id?.name || "Team 1"} vs {m.team2Id?.name || "Team 2"}
+                    </h3>
+                    <p className={`text-xs font-medium mt-1 ${m.status === "live" ? "text-red-300" : "text-gold-glow"}`}>
+                      {m.status === "live"
+                        ? m.liveStatus || "Live in play"
+                        : `Scheduled on ${new Date(m.scheduledTime || Date.now()).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" })} • ${new Date(m.scheduledTime || Date.now()).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}`}
+                    </p>
+                    <p className="text-[11px] text-[#9B9691] mt-2 flex items-center gap-1.5">
+                      <MapPin className="w-3 h-3 text-gold" />
+                      {m.venueId?.name || m.venue || "Chepauk Pavilion Cricket Nets & Ground, Chennai"}
+                    </p>
                   </div>
-                  <h3 className="font-bold text-white text-base">
-                    Chennai Super Smashers vs Kovai Thunderbolts
-                  </h3>
-                  <p className="text-xs text-red-300 font-medium mt-1">
-                    Live • Kovai Thunderbolts require 27 runs from 10 balls
-                  </p>
-                  <p className="text-[11px] text-[#9B9691] mt-2 flex items-center gap-1.5">
-                    <MapPin className="w-3 h-3 text-gold" />
-                    Chepauk Pavilion Cricket Nets & Ground, Chennai
-                  </p>
-                </div>
-                <div className="mt-4 pt-2 border-t border-court-800 flex justify-end">
-                  <Link
-                    to="/live"
-                    className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-red-600/30 transition-all"
-                  >
-                    <PlayCircle className="w-3.5 h-3.5" />
-                    <span>Watch Match Feed</span>
-                  </Link>
-                </div>
-              </div>
-
-              <div className="p-4 bg-court-950 border border-court-750 rounded-2xl flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="px-2 py-0.5 bg-gold/15 text-gold text-[10px] font-bold rounded-md">
-                      SCHEDULED
-                    </span>
-                    <span className="text-xs text-[#9B9691]">Cricket • Semifinal</span>
+                  <div className="mt-4 pt-2 border-t border-court-800 flex justify-end">
+                    {m.status === "live" ? (
+                      <Link
+                        to="/live"
+                        className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-red-600/30 transition-all"
+                      >
+                        <PlayCircle className="w-3.5 h-3.5" />
+                        <span>Watch Match Feed</span>
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/tournaments"
+                        className="px-3.5 py-1.5 bg-court-800 hover:bg-court-750 text-[#F5F0E6] font-bold rounded-xl text-xs border border-court-700 transition-colors"
+                      >
+                        <span>View Tournament Bracket</span>
+                      </Link>
+                    )}
                   </div>
-                  <h3 className="font-bold text-white text-base">
-                    Chennai Super Smashers vs Rockfort Blasters
-                  </h3>
-                  <p className="text-xs text-gold-glow font-medium mt-1">
-                    Scheduled Tomorrow • 04:00 PM IST
-                  </p>
-                  <p className="text-[11px] text-[#9B9691] mt-2 flex items-center gap-1.5">
-                    <MapPin className="w-3 h-3 text-gold" />
-                    Chepauk Stadium, Chennai
-                  </p>
                 </div>
-                <div className="mt-4 pt-2 border-t border-court-800 flex justify-end">
-                  <Link
-                    to="/tournaments"
-                    className="px-3.5 py-1.5 bg-court-800 hover:bg-court-750 text-[#F5F0E6] font-bold rounded-xl text-xs border border-court-700 transition-colors"
-                  >
-                    <span>View Tournament Bracket</span>
-                  </Link>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>

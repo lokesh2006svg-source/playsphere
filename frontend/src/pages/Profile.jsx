@@ -719,43 +719,53 @@ const Profile = () => {
       {/* ----------------- COACH TAB 2: UPCOMING MATCHES ----------------- */}
       {isCoach && activeTab === "matches" && (
         <div className="space-y-4 max-w-3xl mx-auto">
-          <div className="p-5 bg-court-900 border border-court-700 rounded-2xl flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2">
-              <span className="px-2.5 py-0.5 bg-red-500/20 text-red-400 text-xs font-bold rounded-md animate-pulse">
-                LIVE MATCH
-              </span>
-              <span className="text-xs text-[#9B9691]">State T20 Championship</span>
+          {(profile?.upcomingMatches && profile.upcomingMatches.length > 0
+            ? profile.upcomingMatches
+            : [
+                {
+                  team1Id: { name: "Chennai Super Smashers" },
+                  team2Id: { name: "Kovai Thunderbolts" },
+                  sport: "Cricket",
+                  status: "live",
+                  scheduledTime: new Date(),
+                  liveStatus: "Live Score: Smashers 168/4 (20.0) • Thunderbolts 142/6 (18.2)",
+                  venueId: { name: "Chepauk Pavilion Cricket Ground, Chennai" },
+                },
+                {
+                  team1Id: { name: "Chennai Super Smashers" },
+                  team2Id: { name: "Rockfort Blasters" },
+                  sport: "Cricket",
+                  status: "scheduled",
+                  scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                  venueId: { name: "Chepauk Ground, Chennai" },
+                },
+              ]
+          ).map((m, idx) => (
+            <div key={idx} className="p-5 bg-court-900 border border-court-700 rounded-2xl flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-2">
+                <span className={`px-2.5 py-0.5 text-xs font-bold rounded-md ${
+                  m.status === "live"
+                    ? "bg-red-500/20 text-red-400 animate-pulse"
+                    : "bg-gold/15 text-gold"
+                }`}>
+                  {m.status === "live" ? "LIVE MATCH" : "SCHEDULED FIXTURE"}
+                </span>
+                <span className="text-xs text-[#9B9691]">{m.sport || "Cricket"}</span>
+              </div>
+              <h3 className="text-base font-bold text-white mt-1">
+                {m.team1Id?.name || "Team 1"} vs {m.team2Id?.name || "Team 2"}
+              </h3>
+              <p className={`text-xs font-semibold mt-1 ${m.status === "live" ? "text-red-300" : "text-gold"}`}>
+                {m.status === "live"
+                  ? m.liveStatus || "Match in progress"
+                  : `Scheduled on ${new Date(m.scheduledTime || Date.now()).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" })} at ${new Date(m.scheduledTime || Date.now()).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}`}
+              </p>
+              <p className="text-xs text-[#9B9691] mt-2 flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-gold" />
+                {m.venueId?.name || m.venue || "Chepauk Pavilion Cricket Ground, Chennai"}
+              </p>
             </div>
-            <h3 className="text-base font-bold text-white mt-1">
-              Chennai Super Smashers vs Kovai Thunderbolts
-            </h3>
-            <p className="text-xs text-red-300 font-semibold mt-1">
-              Live Score: Smashers 168/4 (20.0) • Thunderbolts 142/6 (18.2)
-            </p>
-            <p className="text-xs text-[#9B9691] mt-2 flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-gold" />
-              Chepauk Pavilion Cricket Ground, Chennai
-            </p>
-          </div>
-
-          <div className="p-5 bg-court-900 border border-court-700 rounded-2xl flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2">
-              <span className="px-2.5 py-0.5 bg-gold/15 text-gold text-xs font-bold rounded-md">
-                SCHEDULED FIXTURE
-              </span>
-              <span className="text-xs text-[#9B9691]">Semifinal Knockout</span>
-            </div>
-            <h3 className="text-base font-bold text-white mt-1">
-              Chennai Super Smashers vs Rockfort Blasters
-            </h3>
-            <p className="text-xs text-gold font-medium mt-1">
-              Tomorrow at 04:00 PM IST
-            </p>
-            <p className="text-xs text-[#9B9691] mt-2 flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-gold" />
-              Chepauk Ground, Chennai
-            </p>
-          </div>
+          ))}
         </div>
       )}
 
@@ -866,33 +876,48 @@ const Profile = () => {
           </div>
 
           <div className="space-y-3">
-            <div className="p-4 bg-court-950 border border-court-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-              <div>
-                <span className="text-emerald-400 font-bold block">Karthik Subramanian</span>
-                <span className="text-[#9B9691]">Marina Grand Sports Turf • 1-Hour Evening Slot</span>
-                <p className="text-[11px] text-gold mt-0.5">Today • 06:00 PM - 07:00 PM</p>
+            {(profile?.bookingStats?.recentBookings && profile.bookingStats.recentBookings.length > 0
+              ? profile.bookingStats.recentBookings
+              : [
+                  {
+                    userId: { name: "Karthik Subramanian" },
+                    venueId: { name: "Marina Grand Sports Turf" },
+                    slot: "06:00 PM - 07:00 PM",
+                    date: new Date(),
+                    totalPrice: 1200,
+                    paymentStatus: "paid",
+                    paymentId: "UPI-TXN-98401234",
+                  },
+                  {
+                    userId: { name: "Ananya Ramesh" },
+                    venueId: { name: "Marina Grand Sports Turf" },
+                    slot: "07:00 PM - 08:00 PM",
+                    date: new Date(),
+                    totalPrice: 1200,
+                    paymentStatus: "paid",
+                    paymentId: "UPI-TXN-98401235",
+                  },
+                ]
+            ).map((b, bIdx) => (
+              <div
+                key={bIdx}
+                className="p-4 bg-court-950 border border-court-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+              >
+                <div>
+                  <span className="text-emerald-400 font-bold block">{b.userId?.name || "Customer Athlete"}</span>
+                  <span className="text-[#9B9691]">{b.venueId?.name || "Sports Ground"} • {b.slot || "1-Hour Slot"}</span>
+                  <p className="text-[11px] text-gold mt-0.5">
+                    {new Date(b.date || Date.now()).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" })} • {b.slot || "06:00 PM - 07:00 PM"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-lg text-[10px] font-bold">
+                    {b.paymentStatus === "paid" ? `PAID (₹${b.totalPrice || 1200})` : "CONFIRMED"}
+                  </span>
+                  <span className="text-[#9B9691] font-mono text-[10px]">{b.paymentId || "UPI-TXN-VERIFIED"}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-lg text-[10px] font-bold">
-                  PAID (₹1,200)
-                </span>
-                <span className="text-[#9B9691] font-mono text-[10px]">UPI-TXN-98401234</span>
-              </div>
-            </div>
-
-            <div className="p-4 bg-court-950 border border-court-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-              <div>
-                <span className="text-emerald-400 font-bold block">Ananya Ramesh</span>
-                <span className="text-[#9B9691]">Marina Grand Sports Turf • 1-Hour Night Slot</span>
-                <p className="text-[11px] text-gold mt-0.5">Today • 07:00 PM - 08:00 PM</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-lg text-[10px] font-bold">
-                  PAID (₹1,200)
-                </span>
-                <span className="text-[#9B9691] font-mono text-[10px]">UPI-TXN-98401235</span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       )}

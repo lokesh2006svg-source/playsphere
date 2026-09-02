@@ -47,10 +47,29 @@ const PlayerIdCard = ({ cardData, playerName = "Player" }) => {
     }
   };
 
-  const formattedDate = new Date(joinedDate).toLocaleDateString("en-IN", {
-    month: "short",
-    year: "numeric",
-  });
+  const rawJoinedDate = cardData.joinedDate || cardData.createdAt || Date.now();
+  const issuedDateObj = new Date(rawJoinedDate);
+  const formattedIssuedDate = !isNaN(issuedDateObj.getTime())
+    ? issuedDateObj.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : new Date().toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+
+  const validThruObj = new Date(issuedDateObj);
+  validThruObj.setFullYear(validThruObj.getFullYear() + 1);
+  const formattedValidThru = !isNaN(validThruObj.getTime())
+    ? validThruObj.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "Lifetime Verified";
 
   return (
     <div className="flex flex-col items-center">
@@ -174,9 +193,11 @@ const PlayerIdCard = ({ cardData, playerName = "Player" }) => {
             <span className="font-mono text-sm font-extrabold text-gold tracking-widest">
               {playerIdNumber}
             </span>
-            <span className="text-[9px] text-[#9B9691] block mt-0.5 font-mono">
-              Issued: {formattedDate}
-            </span>
+            <div className="flex items-center gap-2 mt-1 text-[9px] text-[#9B9691] font-mono">
+              <span>Issued: <strong className="text-[#F5F0E6]">{formattedIssuedDate}</strong></span>
+              <span>•</span>
+              <span>Valid Thru: <strong className="text-emerald-400">{formattedValidThru}</strong></span>
+            </div>
           </div>
 
           <div className="bg-court-950 p-1.5 rounded-xl border border-gold/30 shadow-md flex items-center justify-center">
